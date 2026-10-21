@@ -2147,93 +2147,6 @@ st.textContent += `
 })();
 </script>
 <script>
-  
-(function () {
-'use strict';
-
-/* gambar desain jangan dikompres sekeras sebelumnya (teks kecil di diagram harus tetap terbaca) */
-const _pi = window.prepImage; window.prepImage = (f, m = 2400, q = .9) => _pi(f, m, q);
-
-const aiCall = async body => {
-  if (!LIVE) throw new Error('demo');
-  const {data, error} = await sb.functions.invoke('generate-proposal', {body});
-  if (error) { let m = error.message; try { const j = await error.context.json(); if (j && j.error) m = j.error; } catch (e) {} throw new Error(m); }
-  if (data && data.error) throw new Error(data.error);
-  return data;
-};
-const fresh = async pr => { await ensureAll(); const snap = buildSource(S.pd); pr.source_snapshot = snap; await A.update('proposals', pr.id, {source_snapshot: snap}); return snap; };
-const failMsg = e => toast(e.message === 'demo' ? 'Mode demo tidak memakai AI.' : 'AI gagal: ' + e.message, true);
-
-/* gambar dokumen desain (yang disetujui, kategori dipilih, tidak dimatikan) */
-function docsOf(snap, c) {
-  const dp = secOf(c, 'design_parameter') || {}, o = dp.opts || {}, off = o.docsOff || [];
-  return (snap.design ? snap.design.categories : []).flatMap(cat => cat.docs.map(d => ({cat, d, ref: 'doc:' + d.id})))
-    .filter(x => (snap.images || []).some(i => i.id === x.ref) && !off.includes(x.d.id));
-}
-async function explainOne(ref) {
-  const pr = curProp(), r = await aiCall({proposal_id: pr.id, section: 'image_explain', image_id: ref});
-  if (!r || !r.text) throw new Error('Respons kosong');
-  await saveProp(pr, c => { (c.explain = c.explain || {})[ref] = {text: r.text, status: 'ai'}; });
-}
-async function explainMissing(snap) {
-  const c = propContent(curProp()), ex = c.explain || {}, todo = docsOf(snap, c).filter(x => !(ex[x.ref] && ex[x.ref].text)); let bad = 0;
-  for (const [i, x] of todo.entries()) {
-    toast(`AI membaca gambar ${i + 1}/${todo.length}: ${x.d.title}…`);
-    try { await explainOne(x.ref); } catch (e) { if (e.message === 'demo') throw e; bad++; }
-  }
-  return {n: todo.length, bad};
-}
-
-ACT.exAI = async el => {
-  try { const pr = curProp(); toast('AI membaca gambar…'); await fresh(pr); await explainOne(el.dataset.ref); toast('Penjelasan selesai. Periksa sebelum dikirim review.'); } catch (e) { failMsg(e); }
-};
-ACT.exAll = async () => {
-  try { const r = await explainMissing(await fresh(curProp())); toast(r.n ? `${r.n - r.bad} gambar dijelaskan${r.bad ? `, ${r.bad} gagal` : ''}. Periksa sebelum dikirim review.` : 'Semua gambar sudah punya penjelasan.', !!r.bad); } catch (e) { failMsg(e); }
-};
-CHG.exText = el => saveProp(curProp(), c => { (c.explain = c.explain || {})[el.dataset.ref] = {text: el.value, status: 'edited'}; }, 'Tersimpan');
-CHG.exOn = el => saveProp(curProp(), c => {
-  const s = secOf(c, 'design_parameter'); s.opts = s.opts || {}; const off = new Set(s.opts.docsOff || []), id = el.dataset.ref.slice(4);
-  el.checked ? off.delete(id) : off.add(id); s.opts.docsOff = [...off];
-});
-
-/* generate dokumen: gambar dulu, lalu section sesuai template, urut dengan konteks antar-section */
-ACT.aiDoc = async () => {
-  try {
-    const pr = curProp(); toast('Menyegarkan data sumber…'); const snap = await fresh(pr);
-    const im = await explainMissing(snap), order = ['background', 'design_parameter', 'timeline', 'deliverables', 'executive_summary'], res = {}; let bad = im.bad, last = '';
-    for (const [i, key] of order.entries()) {
-      const c0 = propContent(curProp()), s = secOf(c0, key); if (!s || !s.enabled) continue;
-      toast(`AI menulis ${i + 1}/${order.length}: ${s.title}…`);
-      const ctx = Object.entries(res).map(([k, t]) => `### ${secOf(c0, k).title}\n${t.slice(0, 1800)}`).join('\n\n');
-      try { const r = await A.aiText(pr.id, key, s.text, ctx); if (r && r.text) { res[key] = r.text; await saveProp(curProp(), c => { secOf(c, key).text = r.text; }); } else bad++; }
-      catch (e) { bad++; last = e.message; if (last === 'demo') throw e; }
-    }
-    toast(`Selesai: ${im.n - im.bad} gambar dan ${Object.keys(res).length} section ditulis${bad ? `, ${bad} gagal${last ? ' (' + last + ')' : ''}` : ''}. Periksa sebelum dikirim review.`, !!bad);
-  } catch (e) { failMsg(e); }
-};
-ACT.aiAll = ACT.aiDoc;
-
-/* panel penjelasan gambar di editor proposal */
-const _pe = window.propEditor;
-window.propEditor = function (pr) {
-  const h = _pe(pr), c = propContent(pr), snap = pr.source_snapshot || {}, ed = canEdit() && ['draft', 'in_review'].includes(pr.status), ds = ed ? '' : 'disabled';
-  const off = ((secOf(c, 'design_parameter') || {}).opts || {}).docsOff || [];
-  const all = (snap.design ? snap.design.categories : []).flatMap(cat => cat.docs.map(d => ({cat, d, ref: 'doc:' + d.id}))).filter(x => (snap.images || []).some(i => i.id === x.ref));
-  const rows = all.map(({cat, d, ref}) => {
-    const im = snap.images.find(i => i.id === ref), e = (c.explain || {})[ref] || {};
-    return `<div class="wcard"><div class="top"><b>${esc(cat.name)} · ${esc(d.title)} (v${d.version})</b><label class="ck"><input type="checkbox" data-chg="exOn" data-ref="${esc(ref)}" ${off.includes(d.id) ? '' : 'checked'} ${ds}> Sertakan di dokumen</label></div>
-      <div style="display:grid;grid-template-columns:160px 1fr;gap:12px;margin-top:8px"><img class="thumb" data-path="${esc(im.path)}" data-act="viewFile" alt="${esc(d.title)}">
-      <div><textarea rows="5" data-chg="exText" data-ref="${esc(ref)}" ${ds} placeholder="Belum ada penjelasan. Klik Jelaskan dengan AI atau ketik sendiri.">${esc(e.text || '')}</textarea>
-      <div style="display:flex;gap:8px;align-items:center;margin-top:6px">${ed ? `<button class="btn sm" data-act="exAI" data-ref="${esc(ref)}">${e.text ? 'Jelaskan ulang dengan AI' : 'Jelaskan dengan AI'}</button>` : ''}${e.status === 'ai' ? '<span class="badge b-revision">Hasil AI: periksa dulu</span>' : ''}</div></div></div></div>`;
-  }).join('');
-  const card = `<section class="card"><div class="ch"><div><h3>Penjelasan gambar rancangan</h3><span class="hint">Gambar dari dokumen desain yang disetujui tampil di Design Parameters, di bawah kategorinya, diikuti penjelasan ini. Edit manual bila AI keliru; teks yang Anda edit tidak ditimpa kecuali Anda klik jelaskan ulang.</span></div>${ed && rows ? '<button class="btn sm primary" data-act="exAll">Jelaskan semua yang belum</button>' : ''}</div>
-    ${rows || '<p class="empty-s">Belum ada gambar dari dokumen desain yang disetujui. Unggah gambar di Technical Design, setujui, lalu klik "Segarkan data sumber".</p>'}</section>`;
-  return h.replace('<section class="card psec', card + '<section class="card psec');
-};
-})();
-
-</script>
-<script>
   (function () {
 'use strict';
 const ROLES = [['member', 'Member'], ['leader', 'Leader'], ['manager', 'Manager']];
@@ -2371,6 +2284,7 @@ const _pe = window.propEditor;
 window.propEditor = pr => pr.mode === 'upload' ? upView(pr)
   : _pe(pr).replace('<button class="btn sm" data-act="previewDoc">Preview dokumen</button>', m => m + '<button class="btn sm" data-act="a3">A3 Report (PNG)</button>');
 })();
+ 
   
 </script>
 </body>
