@@ -553,7 +553,8 @@ const S = {me:null, depts:[], profiles:[], vendors:[], templates:[], projects:[]
   open:{}, todoDate: today(), mine:false, allTodos:[], allProps:[], trialSel:null, propSel:null};
 const pname = id => { const p = S.profiles.find(x => x.id === id); return p ? (p.full_name || p.email || '-') : '-'; };
 const canEdit = () => !!S.me && S.me.role !== 'viewer';
-const isMgr = () => !!S.me && (['admin','manager'].includes(S.me.role) || (S.pd && S.pd.project && S.pd.project.owner_id === S.me.id));
+const isMgr = () => !!S.me && ['admin','manager'].includes(S.me.role);                          // review dokumen & proposal
+const canReviewTask = () => !!S.me && ['admin','manager','leader'].includes(S.me.role);                 // review tugas teknis
 const dis = () => canEdit() ? '' : 'disabled';
 const selH = (opts, val, attrs = '', cls = '') => `<select class="${cls}" ${attrs}>${opts.map(o => { const x = Array.isArray(o) ? {v:o[0], l:o[1]} : o; return `<option value="${esc(x.v)}" ${String(x.v) === String(val ?? '') ? 'selected' : ''}>${esc(x.l)}</option>`; }).join('')}</select>`;
 const profOpts = (blank = true) => [...(blank ? [['', '— Belum ditentukan —']] : []), ...S.profiles.map(p => [p.id, p.full_name || p.email])];
@@ -995,7 +996,7 @@ function tabExecution() {
           <div>${esc(r.note)}</div>${r.progress_snapshot != null ? `<small class="hint">Progress saat itu ${pct(r.progress_snapshot)}%</small>` : ''}
           ${attsOf('work_review', r.id).length ? gallery('work_review', r.id, false) : ''}
           <div class="acts" style="display:flex;gap:10px;align-items:center;margin-top:6px;flex-wrap:wrap">${r.attachment_path ? `<button class="btn sm" data-act="viewFile" data-path="${esc(r.attachment_path)}">Lampiran</button>` : ''}
-          ${isMgr() ? selH(Object.entries(RVS), r.status, `data-chg="rvStatus" data-id="${r.id}" aria-label="Status review"`, 'inl') : ''}
+          ${canReviewTask() ? selH(Object.entries(RVS), r.status, `data-chg="rvStatus" data-id="${r.id}" aria-label="Status review"`, 'inl') : ''}
           ${r.status === 'revision_needed' || r.type === 'revision' ? `<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-chg="rvDone" data-id="${r.id}" ${r.revision_done ? 'checked' : ''} ${dis()}> Sudah dikerjakan</label>` : ''}</div></div>`).join('') || '<p class="empty-s">Belum ada submit.</p>'}
           ${ed ? `<button class="btn sm primary" data-act="addReview" data-id="${x.id}" style="margin-top:8px">+ Submit progres / review / revisi</button>` : ''}</div>` : ''}</div>`;
     }).join('') || '<p class="empty-s">Belum ada pekerjaan.</p>'}</section>`;
@@ -2231,7 +2232,146 @@ window.propEditor = function (pr) {
 };
 })();
 
-
+</script>
+<script>
+  (function () {
+'use strict';
+const ROLES = [['member', 'Member'], ['leader', 'Leader'], ['manager', 'Manager']];
+const QCDSM = [['Q', 'Quality'], ['C', 'Cost'], ['D', 'Delivery'], ['S', 'Safety'], ['M', 'Morale']];
+ 
+/* ---------- 1. Form project: owner teks bebas, PIC dropdown, QCDSM ---------- */
+window.projectModal = function (p) {
+  const edit = !!p, cur = (p && p.qcdsm) || [];
+  openModal({title: edit ? 'Edit project' : 'Tambah project', sub: edit ? '' : 'Nomor project dibuat otomatis oleh sistem.',
+    fields: [
+      {name: 'name', label: 'Nama project', required: true, value: p && p.name, full: true},
+      {name: 'no', label: 'Nomor project', type: 'readonly', value: edit ? p.project_no : 'Otomatis (PRJ-tahun-urutan)'},
+      {name: 'department_id', label: 'Department', type: 'select', options: [['', '— Pilih department —'], ...S.depts.map(d => [d.id, d.name])], value: p && p.department_id},
+      {name: 'owner_name', label: 'Project owner', required: true, placeholder: 'Ketik nama owner', value: (p && (p.owner_name || pname(p.owner_id))) || S.me.full_name || ''},
+      {name: 'pic_id', label: 'PIC', type: 'select', options: profOpts(), value: p && p.pic_id},
+      {name: 'priority', label: 'Prioritas', type: 'select', options: Object.entries(PRIO), value: (p && p.priority) || 'medium'},
+      {name: 'visibility', label: 'Visibilitas', type: 'select', options: [['public', 'Publik (semua user)'], ['private', 'Privat (owner dan anggota)']], value: (p && p.visibility) || 'public'},
+      {name: 'start_date', label: 'Start date', type: 'date', required: true, value: (p && p.start_date) || today()},
+      {name: 'end_date', label: 'End date', type: 'date', required: true, value: p && p.end_date},
+      {name: 'description', label: 'Deskripsi singkat', type: 'textarea', full: true, value: p && p.description}],
+    body: `<div class="f" style="margin-top:14px"><span>Aspek yang ingin diselesaikan (QCDSM)</span><div class="optrow" style="margin-top:4px">${QCDSM.map(([k, l]) => `<label class="ck"><input type="checkbox" name="qcdsm" value="${k}" ${cur.includes(k) ? 'checked' : ''}> ${k} – ${l}</label>`).join('')}</div></div>`,
+    submit: edit ? 'Simpan perubahan' : 'Buat project',
+    onSubmit: async (v, m) => {
+      OK(v.end_date >= v.start_date, 'End date tidak boleh sebelum start date.');
+      const row = {name: v.name, department_id: v.department_id, owner_name: String(v.owner_name || '').trim(), pic_id: v.pic_id, start_date: v.start_date, end_date: v.end_date,
+        priority: v.priority, visibility: v.visibility, description: v.description, qcdsm: [...m.querySelectorAll('input[name=qcdsm]:checked')].map(x => x.value)};
+      if (edit) { await A.update('projects', p.id, row); await reloadPD([]); render(); toast('Project diperbarui'); }
+      else { const r = await A.insert('projects', row); toast('Project dibuat: ' + r.project_no); location.hash = '#/project/' + r.id + '/study'; }
+    }});
+};
+const chipsQ = q => (q && q.length) ? `<div class="chips" style="margin:0 0 12px">${QCDSM.filter(([k]) => q.includes(k)).map(([k, l]) => `<span class="chip" style="padding-right:12px">${k} · ${l}</span>`).join('')}</div>` : '';
+const _vp = window.viewProject;
+window.viewProject = function () {
+  let h = _vp(); const p = S.pd && S.pd.project; if (!p) return h;
+  h = h.replace(`<span>Owner <b>${esc(pname(p.owner_id))}</b></span>`, `<span>Owner <b>${esc(p.owner_name || pname(p.owner_id))}</b></span>${p.pic_id ? `<span>PIC <b>${esc(pname(p.pic_id))}</b></span>` : ''}`);
+  const q = chipsQ(p.qcdsm); return q ? h.replace('<div class="pc-prog">', q + '<div class="pc-prog">') : h;
+};
+const _gh = window.gridHTML;
+window.gridHTML = () => _gh().split('<article').map(ch => {
+  const m = ch.match(/data-id="([^"]+)"/), p = m && S.projects.find(x => x.id === m[1]);
+  return p && p.owner_name ? ch.replace('Owner ' + esc(pname(p.owner_id)), 'Owner ' + esc(p.owner_name)) : ch;
+}).join('<article');
+const _bs = window.buildSource;
+window.buildSource = d => { const s = _bs(d), p = d.project; if (p.owner_name) s.project.owner = p.owner_name; s.project.pic = p.pic_id ? pname(p.pic_id) : ''; s.project.qcdsm = p.qcdsm || []; return s; };
+ 
+/* ---------- 2. Daftar sebagai Manager / Leader / Member ---------- */
+const _sa = window.showAuth;
+window.showAuth = function (mode = 'login') {
+  _sa(mode);
+  if (mode !== 'login') { const pw = $('form[data-form=auth] input[name=password]'); if (pw) pw.closest('label').insertAdjacentHTML('beforebegin', `<label class="f"><span>Daftar sebagai</span><select name="role">${ROLES.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></label>`); }
+};
+const _fa = FORM.auth;
+FORM.auth = async (f, v) => {
+  if (f.dataset.mode === 'login') return _fa(f, v);
+  const {data, error} = await sb.auth.signUp({email: v.email, password: v.password, options: {data: {full_name: v.name, role: v.role}}});
+  if (error) throw error;
+  if (data.session) await afterAuth(data.user); else { toast('Akun dibuat. Cek email untuk konfirmasi, lalu masuk.'); showAuth('login'); }
+};
+ 
+/* ---------- 3. Proposal di luar template: unggah lalu review ---------- */
+function upView(pr) {
+  const flow = ['draft', 'in_review', 'approved'], idx = flow.indexOf(pr.status), rev = isMgr(), btn = (to, l, cls = 'primary') => `<button class="btn ${cls}" data-act="upStatus" data-id="${pr.id}" data-to="${to}">${l}</button>`;
+  return `<div class="ch"><button class="btn ghost sm" data-act="backProps">${ICON.back}Semua proposal</button></div>
+  <div class="card"><div class="ch"><div><h3>${esc(pr.title)}</h3><span class="hint">Proposal di luar template · diunggah ${fmtDate(pr.created_at)} oleh ${esc(pname(pr.created_by))}</span></div>
+    ${pr.output_file_path ? `<button class="btn sm primary" data-act="viewFile" data-path="${esc(pr.output_file_path)}">Buka file</button>` : ''}</div>
+  <div class="flow">${flow.map((k, i) => `<span class="${i === idx ? 'on' : i < idx ? 'past' : ''}">${PSTAT[k]}</span>`).join('')}</div>
+  ${pr.review_note ? `<p class="hint rv-note">Catatan review: ${esc(pr.review_note)}</p>` : ''}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+    ${pr.status === 'draft' && canEdit() ? `<button class="btn" data-act="upReplace" data-id="${pr.id}">Ganti file</button>${btn('in_review', 'Kirim untuk review')}` : ''}
+    ${pr.status === 'in_review' && rev ? btn('approved', 'Setujui') + `<button class="btn" data-act="upRevise" data-id="${pr.id}">Minta revisi</button>` : ''}
+    ${pr.status === 'in_review' && !rev ? '<span class="hint">Menunggu review Manager.</span>' : ''}
+    ${pr.status === 'approved' && rev ? btn('draft', 'Kembalikan ke draft', '') : ''}</div></div>`;
+}
+const _tp = window.tabProposal;
+window.tabProposal = () => _tp().replace('<button class="btn primary" data-act="newProposal">+ Buat proposal</button>', m => '<button class="btn" data-act="uploadProposal">Unggah proposal sendiri</button>' + m);
+const upPath = f => `${pid()}/proposal/${Date.now()}_${f.name.replace(/[^\w.\-]+/g, '_')}`;
+const FILEF = {name: 'file', label: 'File proposal (PDF, Word, PowerPoint, Excel, atau gambar)', type: 'file', required: true, accept: '.pdf,.doc,.docx,.pptx,.xlsx,image/*', full: true};
+ACT.uploadProposal = () => simpleModal('Unggah proposal untuk review', [{name: 'title', label: 'Judul', required: true, full: true, value: 'Proposal ' + S.pd.project.name + ' (di luar template)'}, FILEF],
+  async v => { OK(v.file, 'Pilih file.'); const path = upPath(v.file); await A.upload(path, v.file);
+    await mut(['props'], async () => { const r = await A.insert('proposals', {project_id: pid(), title: v.title, mode: 'upload', status: 'draft', content: {}, output_file_path: path, created_by: S.me.id}); S.propSel = r.id; }, 'Proposal diunggah'); }, {submit: 'Unggah'});
+ACT.upReplace = el => simpleModal('Ganti file proposal', [FILEF],
+  async v => { OK(v.file, 'Pilih file.'); const path = upPath(v.file); await A.upload(path, v.file); await mut(['props'], () => A.update('proposals', el.dataset.id, {output_file_path: path, review_note: null}), 'File diganti'); }, {submit: 'Ganti'});
+ACT.upStatus = el => mut(['props'], () => A.update('proposals', el.dataset.id, el.dataset.to === 'approved'
+  ? {status: 'approved', reviewed_by: S.me.id, reviewed_at: new Date().toISOString(), review_note: null} : {status: el.dataset.to}), PSTAT[el.dataset.to]);
+ACT.upRevise = el => simpleModal('Minta revisi proposal', [{name: 'note', label: 'Apa yang perlu direvisi?', type: 'textarea', required: true, full: true}],
+  v => mut(['props'], () => A.update('proposals', el.dataset.id, {status: 'draft', review_note: v.note, reviewed_by: S.me.id, reviewed_at: new Date().toISOString()}), 'Revisi diminta'), {submit: 'Kirim permintaan revisi'});
+ 
+/* ---------- 4. A3 Report (PNG) dari keseluruhan proposal ---------- */
+const loadImg = src => new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+async function a3(pr) {
+  await ensureAll(); const snap = buildSource(S.pd), pj = snap.project, c = propContent(pr), st = snap.study;
+  const W = 2480, H = 1754, M = 40, G = 30, TOP = 200, cw = (W - 2 * M - 2 * G) / 3, chh = (H - TOP - M - G) / 2, F = 'Plus Jakarta Sans, Arial, sans-serif';
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d');
+  const plain = t => String(t || '').replace(/^\s*#+\s.*$/gm, '').replace(/^\s*\|.*$/gm, '').replace(/\*\*|\*/g, '').replace(/\[PERLU DIISI[^\]]*\]/g, '').replace(/\s+/g, ' ').trim();
+  const secText = k => plain(((secOf(c, k) || {}).text) || '');
+  const wrap = (t, px, py, w, my, lh = 38) => { let ln = ''; for (const wd of String(t || '').split(/\s+/).filter(Boolean)) { const tt = ln ? ln + ' ' + wd : wd;
+    if (x.measureText(tt).width > w && ln) { if (py + lh > my) { x.fillText(ln + ' …', px, py); return my + 1; } x.fillText(ln, px, py); py += lh; ln = wd; } else ln = tt; }
+    if (ln && py <= my) { x.fillText(ln, px, py); py += lh; } return py; };
+  const sub = (t, px, py, my) => { if (py > my) return py; x.font = `700 27px ${F}`; x.fillStyle = '#6d28d9'; x.fillText(t, px, py); x.fillStyle = '#1c1930'; x.font = `400 27px ${F}`; return py + 40; };
+  const list = (a, px, py, w, my) => { for (const t of a || []) { if (py > my) break; x.fillText('•', px, py); py = wrap(t, px + 28, py, w - 28, my); } return py + 8; };
+  const fit = (im, bx, by, bw, bh) => { const k = Math.min(bw / im.width, bh / im.height); x.drawImage(im, bx + (bw - im.width * k) / 2, by + (bh - im.height * k) / 2, im.width * k, im.height * k); };
+  x.fillStyle = '#faf9ff'; x.fillRect(0, 0, W, H);
+  x.fillStyle = '#6d28d9'; x.fillRect(0, 0, W, 150);
+  x.fillStyle = '#fff'; x.font = `700 54px ${F}`; x.fillText(String(pj.name).toUpperCase(), M, 70);
+  x.font = `500 26px ${F}`; x.fillText([pj.project_no, 'Owner ' + (pj.owner || '-'), pj.pic ? 'PIC ' + pj.pic : '', pj.department, fmtRange(pj.start_date, pj.end_date)].filter(Boolean).join('  ·  '), M, 116);
+  QCDSM.forEach(([k], i) => { const cx = W - M - 40 - (4 - i) * 100, on = (pj.qcdsm || []).includes(k); x.beginPath(); x.arc(cx, 75, 36, 0, 7); x.fillStyle = on ? '#fff' : 'rgba(255,255,255,.18)'; x.fill();
+    x.fillStyle = on ? '#6d28d9' : 'rgba(255,255,255,.7)'; x.font = `700 36px ${F}`; x.textAlign = 'center'; x.fillText(k, cx, 88); x.textAlign = 'left'; });
+  const B = async (i, title, fn) => { const bx = M + (i % 3) * (cw + G), by = TOP + Math.floor(i / 3) * (chh + G);
+    x.fillStyle = '#fff'; x.strokeStyle = '#d9d0f2'; x.lineWidth = 3; x.beginPath(); x.roundRect(bx, by, cw, chh, 18); x.fill(); x.stroke();
+    x.fillStyle = '#f3f0ff'; x.beginPath(); x.roundRect(bx, by, cw, 64, [18, 18, 0, 0]); x.fill();
+    x.fillStyle = '#5b21b6'; x.font = `700 32px ${F}`; x.fillText(`${i + 1}. ${title}`, bx + 24, by + 43);
+    x.fillStyle = '#1c1930'; x.font = `400 27px ${F}`; await fn(bx + 24, by + 98, cw - 48, by + chh - 20); };
+  const sel = snap.rab.systems.find(s => s.is_selected);
+  await B(0, 'Latar Belakang & Masalah', (px, py, w, my) => wrap(secText('background') || plain(st.problem_statement), px, py, w, my));
+  await B(1, 'Tujuan, Persyaratan & Batasan', (px, py, w, my) => { py = sub('Tujuan', px, py, my); py = wrap(plain(st.objective), px, py, w, my) + 10;
+    py = sub('Persyaratan desain', px, py, my); py = list(st.requirements, px, py, w, my); py = sub('Batasan desain', px, py, my); list(st.constraints, px, py, w, my); });
+  await B(2, 'Rancangan Teknis', async (px, py, w, my) => {
+    const ims = []; for (const im of snap.images.filter(i => i.id.startsWith('doc:')).slice(0, 2)) { try { const o = await loadImg(await toDataURL(im.path)); if (o) ims.push(o); } catch (e) {} }
+    const ih = ims.length ? (my - py) * .5 : 0, iw = (w - 20) / 2; ims.forEach((o, i) => fit(o, px + i * (iw + 20), py, iw, ih));
+    py += ih + (ims.length ? 20 : 0); py = sub(sel ? 'Komponen ' + sel.name : 'Komponen', px, py, my);
+    list(sel ? snap.rab.items.filter(i => (i.qty[sel.id] || 0) > 0).map(i => `${i.name} × ${i.qty[sel.id]}`) : [], px, py, w, my); });
+  await B(3, 'Anggaran & Pemilihan Sistem', (px, py, w, my) => {
+    for (const s of snap.rab.systems) { if (py > my) break; x.font = `${s.is_selected ? 700 : 400} 27px ${F}`; x.fillText((s.is_selected ? '✓ ' : '') + s.name, px, py); x.textAlign = 'right'; x.fillText(rupiah(s.total), px + w, py); x.textAlign = 'left'; py += 40; }
+    x.font = `400 27px ${F}`; if (sel) { py = sub('Dasar pemilihan', px + 0, py + 10, my); wrap(`Kelebihan: ${sel.pros || '-'}. Kekurangan: ${sel.cons || '-'}.`, px, py, w, my); } });
+  await B(4, 'Rencana & S-Curve', async (px, py, w, my) => {
+    const model = schedModel(snap.timeline), png = model && await svgToPng(inlineSvg(scurveSVG(model))), ci = png && await loadImg(png); if (ci) fit(ci, px, py, w, (my - py) * .6);
+    py += (my - py) * .6 + 24; const t = tlStats(snap.timeline); if (t) py = wrap(`${t.weeks} minggu · ${fmtRange(t.s, t.e)} · ${t.n} kegiatan`, px, py, w, my) + 6;
+    const big = [...snap.timeline].sort((a, b) => b.weight - a.weight).slice(0, 3).map(k => k.name); if (big.length) { py = sub('Kegiatan berbobot terbesar', px, py, my); list(big, px, py, w, my); } });
+  await B(5, 'Fitur & Kriteria Keberhasilan', (px, py, w, my) => { py = sub('Fitur utama', px, py, my); py = list(st.features, px, py, w, my);
+    py = sub('Parameter uji', px, py, my); list(st.trial_parameters.map(p => `${p.name}: ${p.target || '-'} ${p.unit || ''}${p.tolerance && p.tolerance !== '-' ? ' (toleransi ' + p.tolerance + ')' : ''}`), px, py, w, my); });
+  await new Promise(res => cv.toBlob(b => { saveBlob(`${pj.project_no}-A3-report.png`, b); res(); }, 'image/png'));
+}
+ACT.a3 = async () => { try { toast('Menyusun A3 report…'); await a3(curProp()); toast('A3 report diunduh (PNG, 2480 × 1754 px = A3 landscape 150 dpi)'); } catch (e) { fail(e); } };
+const _pe = window.propEditor;
+window.propEditor = pr => pr.mode === 'upload' ? upView(pr)
+  : _pe(pr).replace('<button class="btn sm" data-act="previewDoc">Preview dokumen</button>', m => m + '<button class="btn sm" data-act="a3">A3 Report (PNG)</button>');
+})();
+  
 </script>
 </body>
 </html>
