@@ -2287,5 +2287,238 @@ window.propEditor = pr => pr.mode === 'upload' ? upView(pr)
  
   
 </script>
+  <!-- =====================================================================
+ RANCANG UI v4 - lapisan tampilan (presentation layer saja)
+ Cara pasang: tempel seluruh isi file ini TEPAT SEBELUM </body>,
+ setelah semua <script> yang sudah ada. Tidak ada fungsi data/ACT/CHG/FORM yang diubah.
+ Untuk membatalkan: hapus blok ini.
+===================================================================== -->
+<style id="ui4">
+/* ---------- design tokens (Design Kit 1.0) ---------- */
+:root{
+  --bg:#ffffff; --soft:#F7F8FD; --lav:#EEEAFE; --lav2:#E0D9FB; --line:#E6E8F2; --line2:#D7DAE9;
+  --ink:#17204B; --mute:#667090; --p:#4932C7; --p2:#5B45D6; --pd:#3A26A8; --pl:#A99CF0;
+  --ok:#0F8A58; --okbg:#E5F8EF; --warn:#B86A06; --warnbg:#FFF1DF; --bad:#D62E48; --badbg:#FFE7EB;
+  --blue:#2878E8; --bluebg:#E7F2FF;
+  --r:16px; --sh:0 1px 2px rgba(23,32,75,.04),0 8px 24px rgba(23,32,75,.05);
+}
+body{background:var(--soft);color:var(--ink)}
+h1{font-size:28px}
+h2{font-size:20px}
+:focus-visible{outline-color:var(--p2)}
+
+/* ---------- komponen dasar ---------- */
+.btn{border-radius:12px;border-color:var(--line2);font-weight:600}
+.btn:hover{background:var(--lav);border-color:var(--pl)}
+.btn.primary{background:var(--p);border-color:var(--p);box-shadow:0 6px 14px rgba(73,50,199,.22)}
+.btn.primary:hover{background:var(--pd);border-color:var(--pd)}
+.btn.sm{border-radius:10px}
+input,select,textarea{border-radius:12px;border-color:var(--line2)}
+input:focus,select:focus,textarea:focus{border-color:var(--p2);box-shadow:0 0 0 3px rgba(73,50,199,.14)}
+.card,.phead,.stat,.wcard{border-radius:var(--r)}
+.card,.phead{border-color:var(--line);box-shadow:var(--sh)}
+.stat{border-color:var(--line);box-shadow:none}
+.modal{border-radius:20px}
+.badge{padding:3px 10px}
+.bar{background:var(--lav2)}
+.bar i{background:linear-gradient(90deg,var(--p),var(--p2))}
+.seg i{background:var(--p2)}
+.tbl th{background:var(--soft);color:var(--mute);font-weight:600}
+.tbl th:first-child{border-top-left-radius:10px}.tbl th:last-child{border-top-right-radius:10px}
+.ar{fill:rgba(73,50,199,.08)}
+.sheet th,.docv .dt th{background:#EEEAFE}
+
+/* ---------- logo ---------- */
+.logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#5B45D6,#2878E8);box-shadow:0 6px 14px rgba(73,50,199,.28)}
+.logo svg{width:20px;height:20px;stroke-width:2.4}
+.brand .bt{display:flex;flex-direction:column;line-height:1.1;letter-spacing:.02em;font-size:17px}
+.brand .bt small{font-size:9.5px;font-weight:600;color:var(--mute);letter-spacing:.08em;text-transform:uppercase;margin-top:3px}
+
+/* ---------- shell: sidebar + topbar ---------- */
+.app{grid-template-columns:240px minmax(0,1fr)}
+.col{min-width:0;display:flex;flex-direction:column}
+.side{padding:22px 16px;border-right:1px solid var(--line)}
+.nav a{border-radius:12px;padding:10px 12px;font-weight:600}
+.nav a.on{background:var(--lav);color:var(--p)}
+.nav a.on svg{stroke:var(--p)}
+.tagcard{margin-top:auto;border-radius:16px;padding:16px;background:linear-gradient(145deg,#EEEAFE,#E7F2FF);border:1px solid var(--line);font-size:12.5px;color:var(--mute);line-height:1.5}
+.tagcard b{display:block;color:var(--p);font-size:13.5px;margin-bottom:4px}
+.side .demo-note{margin:12px 0 0}
+.topbar{height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 40px;background:rgba(255,255,255,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+.crumb{color:var(--mute);font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.crumb b{color:var(--ink);font-weight:650}.crumb a{color:var(--mute)}.crumb a:hover{color:var(--p)}
+.tb-user{display:flex;align-items:center;gap:10px;flex:none}
+.tb-user .who{text-align:right;line-height:1.25;font-size:13px}
+.tb-user .who b{display:block;font-weight:650}.tb-user .who span{color:var(--mute);font-size:12px;text-transform:capitalize}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--lav);color:var(--p);display:grid;place-items:center;font-weight:700;font-size:13px;border:2px solid #fff;box-shadow:0 0 0 1px var(--line2)}
+.main{padding:28px 40px 64px}
+
+/* ---------- hero dashboard ---------- */
+.hero{position:relative;overflow:hidden;display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:22px;padding:30px 36px;border-radius:20px;border:1px solid var(--line);background:linear-gradient(120deg,#EEEAFE 0%,#E6EEFF 62%,#F3F0FF 100%)}
+.hero:before{content:"";position:absolute;right:-60px;top:-80px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(91,69,214,.14),transparent 68%)}
+.hero .tx{position:relative;max-width:520px}
+.hero .hi{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:99px;padding:4px 14px;font-weight:600;font-size:12.5px;margin-bottom:12px}
+.hero h1{font-size:30px;line-height:1.2;margin-bottom:6px}
+.hero p{color:var(--mute);margin-bottom:18px}
+.hero .ill{position:relative;width:min(380px,42%);height:auto;flex:none}
+
+/* ---------- kartu modul ---------- */
+.mods{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.mod{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:3px;padding:18px 18px 16px;border-radius:18px;border:1px solid rgba(23,32,75,.06);color:var(--ink)}
+.mod:after{content:"";position:absolute;right:-26px;bottom:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.55)}
+.mod>*{position:relative;z-index:1}
+.mod .mi{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.8);display:grid;place-items:center;margin-bottom:8px}
+.mod .mi .ic{width:22px;height:22px}
+.mod h3{font-size:16px;font-weight:700}
+.mod p{color:var(--mute);font-size:12.5px;margin-bottom:8px}
+.mod .mp{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.mod .mp b{font-size:22px;letter-spacing:-.02em}.mod .mp span{font-size:12px;color:var(--mute)}
+.mod .bar{background:rgba(255,255,255,.7)}
+.mod .go{font-weight:650;font-size:13px;margin-top:auto;padding-top:14px}
+a.mod{transition:transform .15s,box-shadow .15s}a.mod:hover{transform:translateY(-2px);box-shadow:var(--sh)}
+.m-study{background:linear-gradient(135deg,#E7F2FF,#F4F8FF)}.m-study .ic{stroke:#2878E8}
+.m-design{background:linear-gradient(135deg,#E5F8EF,#F3FCF8)}.m-design .ic{stroke:#16A36A}
+.m-buy{background:linear-gradient(135deg,#FFF1DF,#FFF8EE)}.m-buy .ic{stroke:#E58A12}
+.m-exec{background:linear-gradient(135deg,#F0EBFF,#F8F5FF)}.m-exec .ic{stroke:#6D4FE0}
+.m-trial{background:linear-gradient(135deg,#E1F5FB,#F1FAFD)}.m-trial .ic{stroke:#1593B8}
+.m-prop{background:linear-gradient(135deg,#EAE6FF,#F6F3FF)}.m-prop .ic{stroke:var(--p)}
+.sec-t{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 0 12px}
+.sec-t h2{font-size:18px}
+
+/* ---------- kartu project ---------- */
+.stats{gap:16px}
+.stat{padding:16px 18px;background:#fff}
+.stat b{font-size:28px}
+.pcard{border-radius:18px;padding:18px 18px 16px;border-color:var(--line)}
+.pcard:hover{border-color:var(--pl);box-shadow:var(--sh);transform:translateY(-2px)}
+.pcard h3{font-size:16px}
+.pc-foot{border-top-color:var(--line)}
+
+/* ---------- header project & tab ---------- */
+.phead{padding:24px 26px;border-radius:20px}
+.tabs{gap:8px}
+.tab{border-radius:14px;border-color:var(--line);background:#fff}
+.tab.on{background:var(--lav);border-color:var(--p);box-shadow:none}
+
+/* ---------- auth ---------- */
+.auth{background:linear-gradient(135deg,#EEEAFE,#F7F8FD 55%,#E7F2FF)}
+.auth .box{border-radius:20px;box-shadow:0 20px 50px rgba(23,32,75,.10)}
+
+/* ---------- tablet / mobile ---------- */
+@media (max-width:1180px){.mods{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:980px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;flex-direction:row;justify-content:center;padding:6px 12px calc(6px + env(safe-area-inset-bottom,0px));z-index:40;border-right:0;border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(23,32,75,.06);overflow:visible;gap:0}
+  .side .brand,.side .tagcard,.side .demo-note{display:none}
+  .nav{display:flex;width:100%;justify-content:space-around;gap:4px}
+  .nav a{flex-direction:column;gap:3px;font-size:11.5px;padding:7px 18px;margin:0;border-radius:14px}
+  .topbar{padding:0 16px;height:56px}
+  .tb-user .who{display:none}
+  .main{padding:20px 16px 100px}
+  .hero{padding:22px 20px;border-radius:18px}
+  .hero h1{font-size:24px}
+  .hero .ill{width:150px}
+  .toast{bottom:92px}
+}
+@media (max-width:700px){
+  .hero .ill{display:none}
+  .mods{gap:12px}.mod{padding:14px}.mod h3{font-size:15px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+
+<script>
+(function () {
+'use strict';
+const svg = (inner, cls = 'ic') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+const IC = {
+  study: svg('<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/>'),
+  design: svg('<path d="M12 3 6 20M12 3l6 17M8.5 14h7"/>'),
+  buy: svg('<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2l2.5 11h10.5l2-8H6.5"/>'),
+  exec: svg('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/>'),
+  trial: svg('<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>'),
+  prop: svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>')
+};
+
+/* logo: huruf R (dipakai di sidebar dan halaman login) */
+ICON.logo = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 19V5h5.2a4 4 0 0 1 0 8H8M13 13l4.5 6"/></svg>';
+
+/* ilustrasi hero: lengan robot, gear, monitor blueprint (SVG pastel) */
+const HERO = `<svg class="ill" viewBox="0 0 360 220" aria-hidden="true" role="img">
+  <ellipse cx="190" cy="204" rx="130" ry="12" fill="#D9D2FB" opacity=".7"/>
+  <circle cx="70" cy="168" r="36" fill="none" stroke="#B8AAF5" stroke-width="9" stroke-dasharray="9 7"/>
+  <circle cx="70" cy="168" r="28" fill="#B8AAF5"/><circle cx="70" cy="168" r="11" fill="#fff"/>
+  <rect x="248" y="52" width="104" height="86" rx="11" fill="#fff" stroke="#CFC7F6" stroke-width="3"/>
+  <rect x="257" y="61" width="86" height="60" rx="7" fill="#EAF2FF"/>
+  <path d="M266 106h34M266 94h56M266 82h24" stroke="#7AA7F0" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="324" cy="92" r="12" fill="none" stroke="#5B45D6" stroke-width="2.5"/>
+  <rect x="291" y="138" width="20" height="14" fill="#CFC7F6"/><rect x="272" y="152" width="58" height="7" rx="3.5" fill="#CFC7F6"/>
+  <rect x="146" y="170" width="88" height="30" rx="13" fill="#C9BDF8"/>
+  <rect x="164" y="150" width="52" height="28" rx="11" fill="#fff" stroke="#CFC7F6" stroke-width="3"/>
+  <g transform="rotate(-25 190 152)"><rect x="176" y="76" width="28" height="86" rx="14" fill="#fff" stroke="#CFC7F6" stroke-width="3"/></g>
+  <circle cx="190" cy="152" r="14" fill="#7A67E6"/>
+  <circle cx="162" cy="92" r="13" fill="#7A67E6"/>
+  <g transform="rotate(40 162 92)"><rect x="148" y="34" width="28" height="66" rx="14" fill="#fff" stroke="#CFC7F6" stroke-width="3"/></g>
+  <circle cx="197" cy="49" r="10" fill="#4932C7"/><circle cx="197" cy="49" r="4" fill="#fff"/>
+</svg>`;
+
+/* ---------- shell ---------- */
+window.renderShell = function () {
+  const nm = S.me.full_name || S.me.email || '', ini = nm.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || 'U';
+  $('#app').innerHTML = `<div class="app"><aside class="side"><div class="brand"><span class="logo">${ICON.logo}</span><span class="bt">RANCANG<small>Engineering Workspace</small></span></div>
+    <nav class="nav" id="nav"><a href="#/" data-p="dashboard">${ICON.grid}Dashboard</a><a href="#/todo" data-p="todo">${ICON.check}To-Do Harian</a><a href="#/proposals" data-p="proposals">${ICON.file}Proposal</a></nav>
+    <div class="tagcard"><b>Plan. Design. Control. Deliver.</b>Dari studi sampai trial dalam satu alur kerja.</div>
+    ${LIVE ? '' : '<div class="demo-note">Mode demo. Data hanya tersimpan di browser ini. Isi konfigurasi Supabase untuk mode multi user.</div>'}</aside>
+    <div class="col"><header class="topbar"><div class="crumb" id="crumb"></div><div class="tb-user"><div class="who"><b>${esc(nm)}</b><span>${esc(S.me.role)}</span></div><span class="avatar" aria-hidden="true">${esc(ini)}</span>
+    ${LIVE ? '<button class="btn sm" data-act="signOut">Keluar</button>' : '<button class="btn sm" data-act="resetDemo">Reset demo</button>'}</div></header><main class="main" id="main"></main></div></div>`;
+};
+
+/* breadcrumb di topbar mengikuti halaman aktif */
+const _render = window.render;
+window.render = function () {
+  _render();
+  const c = $('#crumb'); if (!c) return; const r = S.route || {};
+  if (r.page === 'project' && S.pd && S.pd.project) c.innerHTML = `<a href="#/">Dashboard</a> / <b>${esc(S.pd.project.name)}</b>`;
+  else c.innerHTML = 'RANCANG / <b>' + ({todo: 'To-Do Harian', proposals: 'Proposal'}[r.page] || 'Dashboard') + '</b>';
+};
+
+/* ---------- dashboard ---------- */
+const MODS = [
+  ['study', 'Studi & Analisis', 'Ideasi, kajian, timeline', 'm-study', IC.study],
+  ['technical_design', 'Technical Design', 'Rancangan & persetujuan', 'm-design', IC.design],
+  ['purchasing', 'Purchasing', 'RAB & pengadaan', 'm-buy', IC.buy],
+  ['execution', 'Pengerjaan Teknis', 'Progres pekerjaan', 'm-exec', IC.exec],
+  ['trial', 'Trial & Validasi', 'Uji & verifikasi', 'm-trial', IC.trial]
+];
+function modCards() {
+  const act = new Set(S.projects.filter(p => !['completed', 'cancelled'].includes(p.status)).map(p => p.id));
+  const cards = MODS.map(([k, title, sub, cls, icon]) => {
+    const L = S.stages.filter(s => s.stage === k && act.has(s.project_id)), avg = L.length ? L.reduce((a, s) => a + num(s.progress), 0) / L.length : 0, n = L.filter(s => s.status === 'in_progress').length;
+    return `<div class="mod ${cls}"><span class="mi">${icon}</span><h3>${title}</h3><p>${sub}</p><div class="mp"><b class="mono">${pct(avg)}%</b><span>${n} project berjalan</span></div>${bar(avg)}</div>`;
+  });
+  cards.push(`<a class="mod m-prop" href="#/proposals"><span class="mi">${IC.prop}</span><h3>Proposal</h3><p>Dokumen & review</p><span class="go">Buka semua proposal →</span></a>`);
+  return `<div class="mods" aria-label="Ringkasan tahap project">${cards.join('')}</div>`;
+}
+window.viewDashboard = function () {
+  const P = S.projects, act = P.filter(p => !['completed', 'cancelled'].includes(p.status));
+  const overdue = act.filter(p => p.end_date < today()).length, avg = P.length ? Math.round(P.reduce((a, p) => a + num(p.progress), 0) / P.length) : 0;
+  const first = String(S.me.full_name || S.me.email || '').split(/[\s@]/)[0];
+  return `<section class="hero"><div class="tx"><span class="hi">Halo, ${esc(first)}</span><h1>Mau mengerjakan apa hari ini?</h1><p>Kelola project engineering dari studi, desain, pembelian, pengerjaan, sampai trial dalam satu tempat.</p>${canEdit() ? '<button class="btn primary" data-act="addProject">+ Add Project</button>' : ''}</div>${HERO}</section>
+  ${modCards()}
+  <div class="stats">${stat('Total project', P.length)}${stat('Sedang berjalan', P.filter(p => p.status === 'on_progress').length)}${stat('Terlambat', overdue, overdue ? 'bad' : '')}${stat('Rata-rata progress', avg + '%')}</div>
+  <div class="sec-t"><h2>Project</h2></div>
+  <div class="toolbar">
+    <input id="q" data-inp="q" placeholder="Cari nama atau nomor project" value="${esc(S.f.q)}" aria-label="Cari project">
+    ${selH([['', 'Semua department'], ...S.depts.map(d => [d.id, d.name])], S.f.dept, 'data-chg="filter" data-k="dept" aria-label="Filter department"')}
+    ${selH([['', 'Semua status'], ...Object.entries(STAT)], S.f.status, 'data-chg="filter" data-k="status" aria-label="Filter status"')}
+    ${selH([['priority', 'Urutkan: Prioritas'], ['progress', 'Urutkan: Progress'], ['deadline', 'Urutkan: Deadline'], ['newest', 'Urutkan: Terbaru']], S.f.sort, 'data-chg="filter" data-k="sort" aria-label="Urutkan"')}
+  </div>
+  <div id="grid" class="grid">${gridHTML()}</div>`;
+};
+
+/* jika shell sudah sempat tergambar sebelum blok ini dimuat, gambar ulang dengan tampilan baru */
+try { if (S && S.me && S.route && S.route.page && document.querySelector('.side')) { renderShell(); render(); } } catch (e) { console.error(e); }
+})();
+</script>
 </body>
 </html>
