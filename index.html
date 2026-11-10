@@ -2829,12 +2829,11 @@ try { if (S && S.me && S.route && S.route.page && document.querySelector('.side'
 })();
 </script>
   <!-- =====================================================================
- RANCANG ADD-ON v7: Notifikasi (lonceng di dashboard) + halaman Analytics
- Pasang: tempel seluruh isi file ini TEPAT SEBELUM </body>, setelah blok UI v6.
- Jalankan dulu migration_v4_notifikasi.sql di Supabase. Logic lama tidak diubah.
+ RANCANG ADD-ON v8 = v7 + revisi (notifikasi, performance, trend, gantt, bottleneck, procurement)
+ PASANG: hapus SELURUH blok v7 (dari komentar "ADD-ON v7" sampai </script> terakhir sebelum </body>),
+ lalu tempel isi file ini di tempat yang sama. Logic lain tidak diubah.
 ===================================================================== -->
 <style id="v7css">
-/* ---------- notifikasi ---------- */
 .hero-act{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .nbell{position:relative;width:46px;height:46px;border-radius:14px;border:1px solid rgba(255,255,255,.8);background:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 16px rgba(96,76,195,.16);color:#604CC3;transition:transform .15s}
 .nbell:hover{transform:translateY(-2px)}
@@ -2843,24 +2842,22 @@ try { if (S && S.me && S.route && S.route.page && document.querySelector('.side'
 .nb-badge[hidden]{display:none}
 #nPanel{position:fixed;z-index:80;width:392px;max-height:72vh;display:flex;flex-direction:column;background:#fff;border:1px solid #ECE6F7;border-radius:20px;box-shadow:0 24px 60px rgba(40,20,90,.22);overflow:hidden}
 #nPanel[hidden]{display:none}
-.np-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 18px 10px}
-.np-h h3{font-size:16px}
+.np-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 18px 10px}.np-h h3{font-size:16px}
 .np-tabs{display:flex;gap:6px;padding:0 18px 10px}
 .np-tabs button{border:0;background:#F4F0FC;color:#667090;font-weight:650;border-radius:99px;padding:5px 13px;cursor:pointer;font-size:12.5px}
 .np-tabs button.on{background:#604CC3;color:#fff}
 .np-list{overflow:auto;padding:0 8px 10px;flex:1}
-.np-it{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;border:0;background:transparent;padding:10px;border-radius:14px;cursor:pointer;position:relative}
+.np-it{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;border:0;background:transparent;padding:10px;border-radius:14px;cursor:pointer}
 .np-it:hover{background:#FAF7FF}.np-it.un{background:#F7F4FE}
-.np-ic{width:34px;height:34px;border-radius:11px;flex:none;display:grid;place-items:center}
-.np-ic svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.np-ic.pur{background:#EEEAFA;color:#604CC3}.np-ic.ok{background:#D9F4E9;color:#1E9A6B}.np-ic.warn{background:#FFE5D3;color:#E8651F}.np-ic.info{background:#D8EDF9;color:#2F7FB0}
+.np-av{width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:19px;line-height:1}
+.np-av.sys{background:#604CC3;color:#fff}
 .np-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.np-tx b{font-size:13px;line-height:1.35}.np-tx small{color:#667090;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.np-tx em{font-style:normal;color:#9A9FB8;font-size:11.5px}
+.np-tx b{font-size:13px;line-height:1.35}.np-tx small{color:#667090;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.np-tx em{font-style:normal;color:#8a8fa8;font-size:11.5px;margin-top:2px}.np-tx em strong{color:#4B3AA3;font-weight:650}
 .np-dot{width:9px;height:9px;border-radius:50%;background:#FF7F3E;flex:none;margin-top:6px}
 .np-empty{text-align:center;color:#667090;padding:34px 16px;font-size:13px}
 @media (max-width:600px){#nPanel{left:10px!important;right:10px!important;width:auto}}
 
-/* ---------- analytics ---------- */
 .main.an-main{background:#fff}
 .an-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
 .an-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -2894,35 +2891,44 @@ try { if (S && S.me && S.route && S.route.page && document.querySelector('.side'
 .an-t th:first-child,.an-t td:first-child{text-align:left}
 .an-t td{padding:9px 10px;border-bottom:1px solid #F3EEFB;text-align:right;white-space:nowrap}
 .an-t tr:last-child td{border-bottom:0}
-.an-t tr.tot td{font-weight:700;background:#F4F0FC}
 .an-t a{color:#17204B;font-weight:650;cursor:pointer}.an-t a:hover{color:#604CC3}
 .an-t small{display:block;color:#667090;font-weight:500}
 .an-rank{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:9px;background:#EEEAFA;color:#604CC3;font-weight:700;font-size:12px}
-.an-lag{height:8px;width:120px;background:#FFEADB;border-radius:99px;overflow:hidden;display:inline-block;vertical-align:middle}
+.an-lag{height:8px;width:110px;background:#FFEADB;border-radius:99px;overflow:hidden;display:inline-block;vertical-align:middle}
 .an-lag i{display:block;height:100%;background:#FF7F3E;border-radius:99px}
 .an-sev{display:inline-block;border-radius:99px;padding:2px 11px;font-size:12px;font-weight:700}
 .sev3{background:#E8651F;color:#fff}.sev2{background:#FFE0CC;color:#C2530E}.sev1{background:#D8EDF9;color:#2F7FB0}
-.an-win{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.an-win input[type=range]{flex:1;accent-color:#604CC3}
+/* performance ringkas */
+.an-card.pf{padding:14px 18px}.pf .pf-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.pf .pf-h h2{font-size:16px;display:flex;align-items:center;gap:8px}.pf .pf-h h2 i{width:8px;height:18px;border-radius:4px;background:#604CC3}
+.pf-in{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.pf-t{display:flex;gap:10px;flex:1;min-width:300px}
+.pf .an-tile{flex:1;padding:9px 10px 9px 15px;border-radius:14px}.pf .an-tile:before{width:5px}.pf .an-tile b{font-size:20px;margin:0}.pf .an-tile span{font-size:11.5px}.pf .an-tile small{font-size:11px}
+.pf-d{display:flex;align-items:center;gap:14px}
+.pf .an-donut{width:92px;height:92px;margin:0}.pf .an-ct b{font-size:18px}.pf .an-ct span{font-size:10px}
+.pf .an-lg{gap:3px;font-size:12px}
+@media (max-width:640px){.pf-t{flex-wrap:wrap}.pf .an-tile{min-width:44%}}
+/* gantt */
+.an-win{display:flex;align-items:center;gap:10px;margin-bottom:12px}.an-win input[type=range]{flex:1;accent-color:#604CC3}
 .an-winl{font-weight:700;color:#604CC3;font-size:13px;margin-bottom:8px}
-.an-gwrap{overflow-x:auto;border:1px solid #ECE6F7;border-radius:14px}
+.an-gwrap{overflow-x:auto;border:1px solid #E7E1F3;border-radius:14px}
 .an-g{border-collapse:separate;border-spacing:0;font-size:12px;min-width:100%}
 .an-g th,.an-g td{padding:0}
-.an-g .an-gn{position:sticky;left:0;z-index:2;background:#fff;min-width:240px;max-width:240px;padding:8px 12px;text-align:left;border-bottom:1px solid #F3EEFB;border-right:1px solid #ECE6F7;vertical-align:middle}
+.an-g .an-gn{position:sticky;left:0;z-index:2;background:#fff;min-width:240px;max-width:240px;padding:8px 12px;text-align:left;border-bottom:1px solid #EFEAF8;border-right:1px solid #E7E1F3;vertical-align:middle}
 .an-g td.an-gn.p{cursor:pointer}.an-g td.an-gn.p:hover{background:#FAF7FF}
 .an-g .an-gn small{display:block;color:#667090;font-size:11px}
 .an-g .an-gn .go{float:right;color:#604CC3;font-weight:700;cursor:pointer;padding:0 4px}
 .an-g .an-gn.s{padding-left:30px;background:#FCFBFF}
 .an-gm{background:#EEEAFA;color:#4B3AA3;font-weight:700;padding:7px 4px!important;text-align:center;border-left:1px solid #fff}
 .an-gm:nth-child(odd){background:#DDEFFA;color:#2F7FB0}
-.an-gw{width:30px;min-width:30px;font-size:10.5px;color:#667090;padding:4px 0!important;text-align:center;font-weight:650;background:#fff}
-.an-gw.now{background:#80C4E9;color:#fff}
-.an-gc{text-align:center;font-weight:700;font-size:11px;color:#9A9FB8;background:#FBF9FF;padding:4px 0!important}
-.an-gc.warm{background:#FFEBDA;color:#B85A12}.an-gc.hot{background:#FF7F3E;color:#fff}
-.an-gb{width:30px;min-width:30px;height:36px;border-top:8px solid #fff;border-bottom:8px solid #fff;background-clip:padding-box;border-right:0}
-.an-gb.now{background-color:#FFF6E9}
-.an-gb.on{background-color:#604CC3}.an-gb.hot{background-color:#FF7F3E}.an-gb.tb{background-color:#80C4E9}.an-gb.td{background-color:#3FBF8F}
-.an-gb.ls{border-radius:8px 0 0 8px}.an-gb.le{border-radius:0 8px 8px 0}.an-gb.ls.le{border-radius:8px}
+.an-gw,.an-gc,.an-gb{width:30px;min-width:30px;text-align:center;border-right:1px solid #EFEAF8;border-bottom:1px solid #EFEAF8}
+.an-gw{font-size:10.5px;color:#667090;padding:4px 0!important;font-weight:650;background:#fff}.an-gw.now{background:#80C4E9;color:#fff}
+.an-gc{font-weight:700;font-size:11px;color:#8a8fa8;background:#FBF9FF;padding:4px 0!important}
+.an-gb{height:34px}.an-gb.now{background-color:#FFF6E9}
+.an-gb.on{background-color:#604CC3;box-shadow:inset 0 9px #fff,inset 0 -9px #fff}
+.an-gb.tb{background-color:#80C4E9;box-shadow:inset 0 11px #fff,inset 0 -11px #fff}
+.an-gb.td{background-color:#3FBF8F;box-shadow:inset 0 11px #fff,inset 0 -11px #fff}
+.an-g .hv{border-left:2px dashed #FF7F3E!important;border-right:2px dashed #FF7F3E!important}
 .an-sel{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12.5px;color:#667090}
 .an-sel select{width:auto;padding:5px 26px 5px 10px;font-size:12.5px}
 @media (max-width:980px){.an-two{grid-template-columns:1fr}}
@@ -2934,10 +2940,8 @@ try { if (S && S.me && S.route && S.route.page && document.querySelector('.side'
 const C = {pur: '#604CC3', sky: '#80C4E9', or: '#FF7F3E', mint: '#3FBF8F'};
 const PAL = ['#604CC3', '#80C4E9', '#FF7F3E', '#3FBF8F', '#B05FC0', '#F2B134', '#3E7CB1', '#E0597B', '#8A79DB', '#2FA6A0'];
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-/* status purchasing baru "pending" (diubah manual oleh user), ditaruh sebelum "Batal" */
 delete PUR.cancelled; PUR.pending = 'Pending'; PUR.cancelled = 'Batal';
 
-/* ---------- util ---------- */
 const p1 = v => (Math.round(num(v) * 10) / 10).toLocaleString('id-ID');
 const rpc = v => { v = num(v); const a = Math.abs(v); return a >= 1e9 ? 'Rp ' + (v / 1e9).toLocaleString('id-ID', {maximumFractionDigits: 2}) + ' M' : a >= 1e6 ? 'Rp ' + (v / 1e6).toLocaleString('id-ID', {maximumFractionDigits: 1}) + ' jt' : rupiah(v); };
 const iso = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
@@ -2945,22 +2949,13 @@ const idxOf = s => { const t = new Date(D(s)); return t.getFullYear() * 12 + t.g
 const curIdx = () => { const t = new Date(); return t.getFullYear() * 12 + t.getMonth(); };
 const group = (arr, k) => { const m = new Map(); arr.forEach(x => { const a = m.get(x[k]); a ? a.push(x) : m.set(x[k], [x]); }); return m; };
 const svgI = (inner, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${inner}</svg>`;
-const IC = {
-  user: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/>',
-  check: '<path d="m5 12 5 5 9-10"/>', redo: '<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/>',
-  file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>',
-  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', cart: '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2l2.5 11h10.5l2-8H6.5"/>',
-  upload: '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 20h16"/>', bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
-  chart: '<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>'
-};
-const KIND = {assign: ['user', 'pur'], task_done: ['check', 'ok'], task_review: ['clock', 'info'], review_submit: ['file', 'info'], revision: ['redo', 'warn'], revision_done: ['check', 'info'],
-  approved: ['check', 'ok'], upload: ['upload', 'info'], doc_review: ['file', 'pur'], proposal: ['file', 'pur'], proposal_ok: ['check', 'ok'], proposal_back: ['redo', 'warn'],
-  purchase: ['cart', 'info'], purchase_ok: ['cart', 'ok'], todo: ['user', 'pur'], deadline: ['clock', 'warn'], lag: ['clock', 'warn']};
-const ago = t => { const s = Math.max(0, (Date.now() - new Date(t).getTime()) / 1000); return s < 60 ? 'baru saja' : s < 3600 ? Math.floor(s / 60) + ' menit lalu' : s < 86400 ? Math.floor(s / 3600) + ' jam lalu' : Math.floor(s / 86400) + ' hari lalu'; };
+const IC = {bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>', chart: '<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>'};
+const hash = s => { let h = 0; String(s == null ? 'x' : s).split('').forEach(c => { h = (h * 31 + c.charCodeAt(0)) >>> 0; }); return h; };
+const AVS = ['🦊', '🐼', '🐯', '🦉', '🐙', '🦄', '🐳', '🦁', '🐸', '🐨', '🐧', '🦋'], AVC = ['#FFD9BF', '#CFE9F7', '#DDD7F5', '#FFE7B8', '#D3F0E2', '#FFC9A8', '#D3EBF8', '#F3D5EC'];
+const avatar = (id, name) => id == null ? '<span class="np-av sys" title="Sistem Rancang">🤖</span>' : `<span class="np-av" style="background:${AVC[hash(id) % AVC.length]}" title="${esc(name)}">${AVS[hash(id + 'x') % AVS.length]}</span>`;
+const fmtT = t => { const d = new Date(t), n = new Date(), same = d.toDateString() === n.toDateString(), hm = d.toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'}).replace('.', ':'); return same ? 'Hari ini, ' + hm : d.toLocaleDateString('id-ID', {day: '2-digit', month: 'short'}) + ', ' + hm; };
 
-/* =====================================================================
-   DATA (dipakai bersama oleh Analytics dan peringatan notifikasi)
-   ===================================================================== */
+/* ---------- data bersama ---------- */
 const AN = {data: null, ts: 0, loading: null, f: {dept: '', range: 'all', coll: 3}, win: null, open: {}};
 async function listAll(t) {
   if (!LIVE) return A.list(t);
@@ -2980,13 +2975,13 @@ async function anLoad(force) {
   return AN.loading;
 }
 const validT = t => t.start_date && t.end_date && dateOK(t.start_date) && dateOK(t.end_date) && t.end_date >= t.start_date;
-function projSched(tl, at) {                       // rencana (S-Curve ideal) vs aktual pada tanggal `at`
+function projSched(tl, at) {
   const L = tl.filter(validT); if (!L.length) return null;
   const tw = L.reduce((a, t) => a + num(t.weight), 0) || 1; let plan = 0, act = 0;
   L.forEach(t => { plan += num(t.weight) * planFrac(t, at); act += num(t.weight) * num(t.progress) / 100; });
   return {plan: plan / tw * 100, act: act / tw * 100};
 }
-function taskAt(t, logs, ms, now) {                // progress kegiatan pada akhir bulan, dari riwayat log
+function taskAt(t, logs, ms, now) {
   if (ms >= now) return num(t.progress);
   const lg = logs.find(l => D(l.log_date) <= ms); if (lg) return num(lg.progress);
   if (t.actual_end && dateOK(t.actual_end) && D(t.actual_end) <= ms) return 100;
@@ -3006,9 +3001,9 @@ function scope(d) {
 }
 
 /* =====================================================================
-   NOTIFIKASI
+   NOTIFIKASI: terbaru di atas, ada pengirim + jam, Masuk / Arsip
    ===================================================================== */
-const N = {rows: [], alerts: [], open: false, tab: 'all', uid: null, ch: null, timer: null};
+const N = {rows: [], alerts: [], open: false, tab: 'inbox', uid: null, ch: null, timer: null};
 const arKey = () => 'rancang_ar_' + N.uid;
 const arGet = () => { try { return new Set(JSON.parse(localStorage.getItem(arKey()) || '[]')); } catch (e) { return new Set(); } };
 const arAdd = ks => { const s = arGet(); ks.forEach(k => s.add(k)); try { localStorage.setItem(arKey(), JSON.stringify([...s].slice(-300))); } catch (e) {} };
@@ -3021,28 +3016,29 @@ function computeAlerts(d) {
   const add = (key, kind, title, body, project_id, tab) => out.push({alert: true, key, kind, title, body, project_id, tab, created_at: ts});
   d.tasks.forEach(t => { if (t.pic_id !== uid || num(t.progress) >= 100 || !t.end_date || !dateOK(t.end_date)) return; const x = diff(t.end_date); if (x <= 3) add(`t:${t.id}:${t.end_date}:${x < 0 ? 'o' : 's'}`, 'deadline', `Kegiatan ${when(x)}: ${t.name}`, pn(t.project_id), t.project_id, 'study'); });
   d.works.forEach(w => { if (w.pic_id !== uid || w.status === 'done' || !w.due_date || !dateOK(w.due_date)) return; const x = diff(w.due_date); if (x <= 3) add(`w:${w.id}:${w.due_date}:${x < 0 ? 'o' : 's'}`, 'deadline', `Pekerjaan ${when(x)}: ${w.title}`, pn(w.project_id), w.project_id, 'execution'); });
-  const now2 = D(today());
   d.projects.filter(p => !['completed', 'cancelled'].includes(p.status)).forEach(p => {
     const mine = p.owner_id === uid || p.pic_id === uid;
     if ((mine || mgr || lead) && p.end_date && dateOK(p.end_date)) { const x = diff(p.end_date); if (x <= 3) add(`p:${p.id}:${p.end_date}:${x < 0 ? 'o' : 's'}`, 'deadline', `Project ${when(x)}: ${p.name}`, p.project_no, p.id, 'study'); }
-    if (mine || mgr) { const s = projSched(d.tBy.get(p.id) || [], now2); if (s && s.plan - s.act > 10) add(`g:${p.id}:${Math.floor((s.plan - s.act) / 10)}`, 'lag', `Progress tertinggal ${Math.round(s.plan - s.act)}% dari rencana: ${p.name}`, `Rencana ${p1(s.plan)}% · Aktual ${p1(s.act)}%`, p.id, 'study'); }
+    if (mine || mgr) { const s = projSched(d.tBy.get(p.id) || [], now); if (s && s.plan - s.act > 10) add(`g:${p.id}:${Math.floor((s.plan - s.act) / 10)}`, 'lag', `Progress tertinggal ${Math.round(s.plan - s.act)}% dari rencana: ${p.name}`, `Rencana ${p1(s.plan)}% · Aktual ${p1(s.act)}%`, p.id, 'study'); }
   });
   const late = d.todos.filter(t => t.assignee_id === uid && t.status !== 'done' && t.todo_date < today()).length;
   if (late) add('td:' + today(), 'deadline', `${late} tugas belum selesai dari hari sebelumnya`, 'To-Do Harian', null, 'todo');
   return out;
 }
+const senderOf = r => { const id = r.sender_id || r.actor_id || r.created_by || r.from_user_id || null; return id && S.profiles.some(p => p.id === id) ? id : null; };
 const nItems = () => {
   const rd = arGet();
-  return [...N.alerts.map(a => ({...a, k: 'a:' + a.key, unread: !rd.has(a.key)})), ...N.rows.map(r => ({...r, k: 'n:' + r.id, unread: !r.is_read}))];
+  return [...N.alerts.map(a => ({...a, k: 'a:' + a.key, unread: !rd.has(a.key), sid: null})), ...N.rows.map(r => ({...r, k: 'n:' + r.id, unread: !r.is_read, sid: senderOf(r)}))]
+    .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
 };
 const nUnread = () => nItems().filter(i => i.unread).length;
 function updateBadges() { const n = nUnread(); $$('.nb-badge').forEach(b => { b.textContent = n > 99 ? '99+' : n; b.hidden = !n; }); }
 function panelEl() { let p = $('#nPanel'); if (!p) { p = document.createElement('div'); p.id = 'nPanel'; p.hidden = true; document.body.appendChild(p); } return p; }
 function paintPanel() {
-  const p = panelEl(), items = nItems().filter(i => N.tab === 'all' || i.unread);
-  p.innerHTML = `<div class="np-h"><h3>Notifikasi</h3><button class="btn sm ghost" data-act="nReadAll">Tandai semua dibaca</button></div>
-  <div class="np-tabs"><button class="${N.tab === 'all' ? 'on' : ''}" data-act="nTab" data-t="all">Semua</button><button class="${N.tab === 'unread' ? 'on' : ''}" data-act="nTab" data-t="unread">Belum dibaca (${nUnread()})</button></div>
-  <div class="np-list">${items.length ? items.map(i => { const [ic, cl] = KIND[i.kind] || ['bell', 'pur']; return `<button class="np-it ${i.unread ? 'un' : ''}" data-act="nOpen" data-k="${esc(i.k)}"><span class="np-ic ${cl}">${svgI(IC[ic])}</span><span class="np-tx"><b>${esc(i.title)}</b>${i.body ? `<small>${esc(i.body)}</small>` : ''}<em>${i.alert ? 'Peringatan' : ago(i.created_at)}</em></span>${i.unread ? '<i class="np-dot"></i>' : ''}</button>`; }).join('') : '<div class="np-empty">Tidak ada notifikasi.</div>'}</div>`;
+  const p = panelEl(), all = nItems(), inbox = all.filter(i => i.unread), arch = all.filter(i => !i.unread), items = N.tab === 'inbox' ? inbox : arch;
+  p.innerHTML = `<div class="np-h"><h3>Notifikasi</h3>${inbox.length ? '<button class="btn sm ghost" data-act="nReadAll">Arsipkan semua</button>' : ''}</div>
+  <div class="np-tabs"><button class="${N.tab === 'inbox' ? 'on' : ''}" data-act="nTab" data-t="inbox">Masuk (${inbox.length})</button><button class="${N.tab === 'archive' ? 'on' : ''}" data-act="nTab" data-t="archive">Arsip (${arch.length})</button></div>
+  <div class="np-list">${items.length ? items.map(i => `<button class="np-it ${i.unread ? 'un' : ''}" data-act="nOpen" data-k="${esc(i.k)}">${avatar(i.sid, pname(i.sid))}<span class="np-tx"><b>${esc(i.title)}</b>${i.body ? `<small>${esc(i.body)}</small>` : ''}<em><strong>${i.sid ? esc(pname(i.sid)) : 'Sistem Rancang'}</strong> · ${fmtT(i.created_at)}</em></span>${i.unread ? '<i class="np-dot"></i>' : ''}</button>`).join('') : `<div class="np-empty">${N.tab === 'inbox' ? 'Tidak ada notifikasi baru.' : 'Arsip kosong. Pesan yang sudah dibaca akan masuk ke sini.'}</div>`}</div>`;
 }
 function placePanel() {
   const p = panelEl(), b = $('.nbell'); if (!b) { p.style.top = '76px'; p.style.right = '20px'; return; }
@@ -3066,7 +3062,7 @@ async function notifInit() {
   if (!N.timer) N.timer = setInterval(() => { if (S.me) refreshAlerts(true); }, 300000);
 }
 Object.assign(ACT, {
-  nToggle: () => { if (N.open) return closePanel(); N.open = true; paintPanel(); placePanel(); panelEl().hidden = false; refreshAlerts(); },
+  nToggle: () => { if (N.open) return closePanel(); N.open = true; N.tab = 'inbox'; paintPanel(); placePanel(); panelEl().hidden = false; refreshAlerts(); },
   nTab: el => { N.tab = el.dataset.t; paintPanel(); },
   nReadAll: async () => {
     arAdd(N.alerts.map(a => a.key)); N.rows.forEach(r => { r.is_read = true; });
@@ -3084,7 +3080,6 @@ document.addEventListener('click', e => { if (N.open && !e.target.closest('#nPan
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && N.open) closePanel(); });
 window.addEventListener('resize', () => { if (N.open) placePanel(); });
 
-/* bel di samping tombol Add Project */
 const _vd = window.viewDashboard;
 window.viewDashboard = function () {
   const h = _vd(), btn = '<button class="btn primary" data-act="addProject">+ Add Project</button>', i = h.indexOf('<div class="dgrid">'), hero = i < 0 ? h : h.slice(0, i);
@@ -3101,18 +3096,18 @@ function donutHTML(segs, big, small) {
   return `<div class="an-donut"><svg viewBox="0 0 160 160" role="img" aria-label="Diagram donat"><circle cx="80" cy="80" r="${r}" fill="none" stroke="#F1EDFA" stroke-width="20"/>${arcs}</svg><div class="an-ct"><b>${big}</b><span>${small}</span></div></div>`;
 }
 const legend = (segs, fmt) => `<div class="an-lg">${segs.map(s => `<div><i style="background:${s.c}"></i><span>${s.l}</span><b>${fmt(s)}</b></div>`).join('')}</div>`;
-const tile = (label, val, sub, c) => `<div class="an-tile" style="--tc:${c}"><span>${label}</span><b>${val}</b><small>${sub || '&nbsp;'}</small></div>`;
+const tile = (label, val, sub, c, title) => `<div class="an-tile" style="--tc:${c}"${title ? ` title="${title}"` : ''}><span>${label}</span><b>${val}</b><small>${sub || '&nbsp;'}</small></div>`;
 
-/* 1. Engineering performance */
+/* 1. Engineering performance (ringkas) */
 function perfCard(sc) {
   const act = sc.filter(p => p.status !== 'completed'), od = act.filter(p => p.end_date < today()).length, avg = sc.length ? sc.reduce((a, p) => a + num(p.progress), 0) / sc.length : 0;
   const segs = [['on_progress', 'Berjalan', C.pur], ['planning', 'Perencanaan', C.sky], ['on_hold', 'Ditahan', C.or], ['completed', 'Selesai', C.mint]].map(([k, l, c]) => ({l, c, v: sc.filter(p => p.status === k).length}));
-  return `<section class="an-card"><div class="an-ch"><div><h2><i></i>Engineering performance</h2><span class="hint">Project dibatalkan tidak dihitung.</span></div></div>
-  <div class="an-two"><div class="an-tiles">${tile('Total project', sc.length, 'semua status', C.pur)}${tile('Active project', act.length, 'belum selesai', C.sky)}${tile('Overdue project', od, od ? 'melewati deadline' : 'tidak ada', C.or)}${tile('Average progress', p1(avg) + '%', 'rata-rata semua project', C.mint)}</div>
-  <div>${donutHTML(segs, sc.length, 'project')}${legend(segs, s => `${s.v} <span style="color:#667090;font-weight:500">(${sc.length ? Math.round(s.v / sc.length * 100) : 0}%)</span>`)}</div></div></section>`;
+  return `<section class="an-card pf"><div class="pf-h"><h2><i></i>Engineering performance</h2><span class="hint">Project dibatalkan tidak dihitung</span></div>
+  <div class="pf-in"><div class="pf-t">${tile('Total', sc.length, 'project', C.pur)}${tile('Aktif', act.length, 'belum selesai', C.sky)}${tile('Overdue', od, od ? 'lewat deadline' : 'tidak ada', C.or)}${tile('Avg progress', p1(avg) + '%', 'semua project', C.mint)}</div>
+  <div class="pf-d">${donutHTML(segs, sc.length, 'project')}${legend(segs, s => s.v)}</div></div></section>`;
 }
 
-/* 2. Project progress trend */
+/* 2. Project progress trend: diagram batang bertumpuk */
 function trendModel(sc, d) {
   const now = D(today()), ci = curIdx(), starts = sc.filter(p => dateOK(p.start_date) && p.start_date).map(p => D(p.start_date));
   if (!starts.length) return null;
@@ -3125,32 +3120,30 @@ function trendModel(sc, d) {
     return {p, color: PAL[k % PAL.length], vals: months.map(mo => !started(p, mo) ? null : !tl.length ? (mo.ms >= now ? num(p.progress) : null) : tl.reduce((s, t) => s + num(t.weight) * taskAt(t, d.lBy.get(t.id) || [], mo.ms, now), 0) / tw)};
   });
   const mean = a => { a = a.filter(x => x != null); return a.length ? a.reduce((x, y) => x + y, 0) / a.length : null; };
-  return {months, rows, overall: months.map((_, i) => mean(rows.map(r => r.vals[i]))),
-    plan: months.map(mo => mean(sc.filter(p => started(p, mo)).map(p => { const s = projSched(d.tBy.get(p.id) || [], mo.ms); return s ? s.plan : null; })))};
+  return {months, rows, plan: months.map(mo => mean(sc.filter(p => started(p, mo)).map(p => { const s = projSched(d.tBy.get(p.id) || [], mo.ms); return s ? s.plan : null; })))};
 }
 function trendSVG(m) {
-  const W = 780, H = 320, L = 46, R = 22, T = 20, B = 42, n = m.months.length, X = i => n === 1 ? L + (W - L - R) / 2 : L + i * (W - L - R) / (n - 1), Y = v => T + (1 - Math.min(100, Math.max(0, v)) / 100) * (H - T - B);
-  const path = a => { let s = '', pen = false; a.forEach((v, i) => { if (v == null) { pen = false; return; } s += (pen ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1) + ' '; pen = true; }); return s; };
+  const W = 780, H = 330, L = 46, R = 16, T = 26, B = 40, n = m.months.length, slot = (W - L - R) / n, bw = Math.min(56, slot * .64), X = i => L + slot * i + slot / 2, Y = v => T + (1 - Math.min(100, Math.max(0, v)) / 100) * (H - T - B);
   const grid = [0, 25, 50, 75, 100].map(v => `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#EFEAF9"/><text x="${L - 8}" y="${Y(v) + 4}" text-anchor="end" font-size="11" fill="#667090">${v}%</text>`).join('');
   const xl = m.months.map((mo, i) => (n > 9 && i % 2 && i !== n - 1) ? '' : `<text x="${X(i).toFixed(1)}" y="${H - 14}" text-anchor="middle" font-size="11" fill="#667090">${mo.label}</text>`).join('');
-  const thin = m.rows.map(r => `<path d="${path(r.vals)}" fill="none" stroke="${r.color}" stroke-width="1.8" opacity=".75" stroke-linejoin="round"/>${r.vals.map((v, i) => v == null ? '' : `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="2.6" fill="${r.color}"/>`).join('')}`).join('');
-  const dots = m.overall.map((v, i) => v == null ? '' : `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="5.5" fill="#fff" stroke="${C.pur}" stroke-width="3"/><text x="${X(i).toFixed(1)}" y="${(Y(v) - 12).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="700" fill="${C.pur}">${Math.round(v)}%</text>`).join('');
-  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" role="img" aria-label="Tren progress project per bulan">${grid}${xl}${thin}<path d="${path(m.plan)}" fill="none" stroke="${C.sky}" stroke-width="2.6" stroke-dasharray="7 6"/><path d="${path(m.overall)}" fill="none" stroke="${C.pur}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>${dots}</svg>`;
+  const bars = m.months.map((mo, i) => {
+    const live = m.rows.filter(r => r.vals[i] != null); if (!live.length) return ''; let acc = 0;
+    const segs = live.map(r => { const v = r.vals[i] / live.length, y1 = Y(acc + v), y0 = Y(acc); acc += v; return `<rect x="${(X(i) - bw / 2).toFixed(1)}" y="${y1.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0, y0 - y1).toFixed(1)}" fill="${r.color}" stroke="#fff" stroke-width="1"><title>${esc(r.p.name)}: ${p1(r.vals[i])}%</title></rect>`; }).join('');
+    return segs + `<text x="${X(i).toFixed(1)}" y="${(Y(acc) - 7).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="#17204B">${Math.round(acc)}%</text>`;
+  }).join('');
+  let pl = '', pen = false; m.plan.forEach((v, i) => { if (v == null) { pen = false; return; } pl += (pen ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1) + ' '; pen = true; });
+  const pd = m.plan.map((v, i) => v == null ? '' : `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="3.5" fill="#fff" stroke="#2F7FB0" stroke-width="2"/>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" role="img" aria-label="Diagram batang progress project per bulan">${grid}${xl}${bars}<path d="${pl}" fill="none" stroke="#2F7FB0" stroke-width="2.4" stroke-dasharray="6 5"/>${pd}</svg>`;
 }
 function trendCard(sc, d) {
   const m = trendModel(sc, d);
-  const head = `<div class="an-ch"><div><h2><i></i>Project progress trend</h2><span class="hint">Garis tebal = akumulasi (rata-rata) progress seluruh project di akhir tiap bulan. Garis tipis = tiap project. Garis putus biru = rencana ideal.</span></div></div>`;
+  const head = `<div class="an-ch"><div><h2><i></i>Project progress trend</h2><span class="hint">Tinggi batang = akumulasi progress seluruh project di akhir bulan (rata-rata). Tiap lapisan warna = kontribusi satu project. Garis putus biru = rencana ideal.</span></div></div>`;
   if (!m || !m.rows.length) return `<section class="an-card">${head}<p class="empty-s">Belum ada project yang sudah dimulai pada filter ini.</p></section>`;
-  const cellBg = v => v == null ? '' : `style="background:rgba(96,76,195,${(v / 100 * .3).toFixed(2)})"`;
-  const tbl = `<div class="an-scroll" style="margin-top:18px"><table class="an-t"><thead><tr><th>Project</th>${m.months.map(mo => `<th>${mo.label}</th>`).join('')}</tr></thead><tbody>
-    ${m.rows.map(r => `<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${r.color};margin-right:8px"></span><a href="#/project/${r.p.id}/study">${esc(r.p.name)}</a></td>${r.vals.map(v => `<td ${cellBg(v)}>${v == null ? '-' : p1(v) + '%'}</td>`).join('')}</tr>`).join('')}
-    <tr class="tot"><td>Akumulasi seluruh project</td>${m.overall.map(v => `<td>${v == null ? '-' : p1(v) + '%'}</td>`).join('')}</tr></tbody></table></div>`;
-  return `<section class="an-card">${head}${trendSVG(m)}<div class="an-legend"><span><i style="background:${C.pur};height:7px"></i>Akumulasi aktual</span><span><i style="background:${C.sky}"></i>Rencana</span></div>
-  <div class="an-chips">${m.rows.map(r => `<span><i style="background:${r.color}"></i>${esc(r.p.name)}</span>`).join('')}</div>
-  <p class="hint" style="margin-top:10px">Dihitung dari bobot × progress kegiatan timeline (riwayat progress). Progress bulan lalu hanya akurat sejak progress dicatat di sistem.</p>${tbl}</section>`;
+  return `<section class="an-card">${head}${trendSVG(m)}<div class="an-chips">${m.rows.map(r => `<span><i style="background:${r.color}"></i>${esc(r.p.name)}</span>`).join('')}</div>
+  <p class="hint" style="margin-top:10px">Dihitung dari bobot × progress kegiatan timeline (riwayat progress). Progress bulan lalu hanya akurat sejak progress dicatat di sistem.</p></section>`;
 }
 
-/* 3. Gantt chart per minggu */
+/* 3. Gantt: grid tipis, minggu padat/tabrakan ditandai garis putus-putus */
 const ganttProjects = () => scope(AN.data).filter(p => p.status !== 'completed' && validT(p)).sort((a, b) => String(a.start_date).localeCompare(b.start_date));
 function winBounds(gp) { const c = curIdx(); let lo = c, hi = c; gp.forEach(p => { lo = Math.min(lo, idxOf(p.start_date)); hi = Math.max(hi, idxOf(p.end_date) - 5); }); return [lo, Math.max(hi, lo)]; }
 function ganttHTML() {
@@ -3161,45 +3154,49 @@ function ganttHTML() {
     for (let w = 0; w < nw; w++) { const s = 1 + 7 * w, e = w === nw - 1 ? days : s + 6; wk.push({s: D(iso(y, m, s)), e: D(iso(y, m, e)), lbl: 'W' + (w + 1)}); } months.push({y, m, wk}); }
   const weeks = months.flatMap(mo => mo.wk), isNow = w => now >= w.s && now <= w.e, coll = AN.f.coll;
   const ov = (a, b, w) => D(a) <= w.e && D(b) >= w.s;
-  const cnt = weeks.map(w => gp.filter(p => ov(p.start_date, p.end_date, w)).length);
-  const cells = (a, b, cls, hotFn) => weeks.map((w, i) => { const on = ov(a, b, w), pv = i > 0 && ov(a, b, weeks[i - 1]), nx = i < weeks.length - 1 && ov(a, b, weeks[i + 1]); const c = on ? (hotFn && hotFn(i) ? 'hot' : cls) : ''; return `<td class="an-gb ${c} ${on && !pv ? 'ls' : ''} ${on && !nx ? 'le' : ''} ${isNow(w) ? 'now' : ''}"></td>`; }).join('');
+  const cnt = weeks.map(w => gp.filter(p => ov(p.start_date, p.end_date, w)).length), hv = cnt.map(c => c >= coll);
+  const cells = (a, b, cls) => weeks.map((w, i) => `<td class="an-gb ${ov(a, b, w) ? cls : ''} ${hv[i] ? 'hv' : ''} ${isNow(w) ? 'now' : ''}"></td>`).join('');
   const body = gp.map(p => {
     const open = !!AN.open[p.id], tl = (d.tBy.get(p.id) || []).filter(validT);
-    const main = `<tr><td class="an-gn p" data-act="anOpen" data-id="${p.id}"><span class="go" data-act="anGo" data-id="${p.id}" title="Buka project">↗</span><b>${open ? '▾' : '▸'} ${esc(p.name)}</b><small>${fmtDate(p.start_date)} – ${fmtDate(p.end_date)}</small></td>${cells(p.start_date, p.end_date, 'on', i => cnt[i] >= coll)}</tr>`;
+    const main = `<tr><td class="an-gn p" data-act="anOpen" data-id="${p.id}"><span class="go" data-act="anGo" data-id="${p.id}" title="Buka project">↗</span><b>${open ? '▾' : '▸'} ${esc(p.name)}</b><small>${fmtDate(p.start_date)} – ${fmtDate(p.end_date)}</small></td>${cells(p.start_date, p.end_date, 'on')}</tr>`;
     const sub = !open ? '' : tl.length ? tl.map(t => `<tr><td class="an-gn s">${esc(t.name)}<small>${t.pic_id ? esc(pname(t.pic_id)) + ' · ' : ''}${p1(t.progress)}%</small></td>${cells(t.start_date, t.end_date, num(t.progress) >= 100 ? 'td' : 'tb')}</tr>`).join('') : `<tr><td class="an-gn s" colspan="${weeks.length + 1}"><small>Belum ada timeline untuk project ini.</small></td></tr>`;
     return main + sub;
   }).join('');
   const a = months[0], z = months[5];
   return `<div class="an-winl">${MON[a.m]} ${a.y} – ${MON[z.m]} ${z.y}</div><div class="an-gwrap"><table class="an-g"><thead>
     <tr><th class="an-gn" rowspan="3">Project</th>${months.map(mo => `<th class="an-gm" colspan="${mo.wk.length}">${MON[mo.m]} ${mo.y}</th>`).join('')}</tr>
-    <tr>${weeks.map(w => `<th class="an-gw ${isNow(w) ? 'now' : ''}">${w.lbl}</th>`).join('')}</tr>
-    <tr>${cnt.map(c => `<td class="an-gc ${c >= coll ? 'hot' : c >= 2 ? 'warm' : ''}" title="${c} project aktif">${c || ''}</td>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>
-  <div class="an-legend"><span><i style="background:${C.pur}"></i>Project berjalan</span><span><i style="background:${C.or}"></i>Minggu tabrakan (≥ ${coll} project)</span><span><i style="background:${C.sky}"></i>Kegiatan timeline</span><span><i style="background:${C.mint}"></i>Kegiatan selesai</span><span><i style="background:#FFF6E9;border:1px solid #F2E7D8"></i>Minggu ini</span></div>`;
+    <tr>${weeks.map((w, i) => `<th class="an-gw ${isNow(w) ? 'now' : ''} ${hv[i] ? 'hv' : ''}">${w.lbl}</th>`).join('')}</tr>
+    <tr>${cnt.map((c, i) => `<td class="an-gc ${hv[i] ? 'hv' : ''}" title="${c} project aktif">${c || ''}</td>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>
+  <div class="an-legend"><span><i style="background:${C.pur}"></i>Project berjalan</span><span><i style="background:${C.sky}"></i>Kegiatan timeline</span><span><i style="background:${C.mint}"></i>Kegiatan selesai</span><span><i style="background:none;border-left:2px dashed ${C.or};border-right:2px dashed ${C.or};width:12px;height:14px;border-radius:0"></i>Minggu padat (≥ ${coll} project bersamaan)</span><span><i style="background:#FFF6E9;border:1px solid #F2E7D8"></i>Minggu ini</span></div>`;
 }
 function ganttCard() {
   const gp = ganttProjects(), [lo, hi] = winBounds(gp); AN.win = Math.min(hi, Math.max(lo, AN.win == null ? curIdx() : AN.win));
-  return `<section class="an-card"><div class="an-ch"><div><h2><i></i>Gantt chart project</h2><span class="hint">Satu baris per project, kolom per minggu. Klik nama project untuk melihat timeline kegiatannya. Angka di bawah header = jumlah project aktif pada minggu itu.</span></div>
-    <label class="an-sel">Tandai tabrakan jika ≥ <select data-chg="anF" data-k="coll">${[2, 3, 4, 5].map(n => `<option value="${n}" ${n === AN.f.coll ? 'selected' : ''}>${n} project</option>`).join('')}</select></label></div>
+  return `<section class="an-card"><div class="an-ch"><div><h2><i></i>Gantt chart project</h2><span class="hint">Satu baris per project, kolom per minggu. Klik nama project untuk melihat kegiatannya. Angka di bawah header = jumlah project aktif pada minggu itu.</span></div>
+    <label class="an-sel">Garis putus jika ≥ <select data-chg="anF" data-k="coll">${[2, 3, 4, 5].map(n => `<option value="${n}" ${n === AN.f.coll ? 'selected' : ''}>${n} project</option>`).join('')}</select></label></div>
     <div class="an-win"><button class="btn sm" data-act="anWin" data-n="-1" aria-label="Bulan sebelumnya">‹</button><input type="range" data-an="win" min="${lo}" max="${hi}" value="${AN.win}" ${hi > lo ? '' : 'disabled'} aria-label="Geser rentang 6 bulan"><button class="btn sm" data-act="anWin" data-n="1" aria-label="Bulan berikutnya">›</button><button class="btn sm ghost" data-act="anWin" data-n="0">Bulan ini</button></div>
     <div id="ganttBox">${ganttHTML()}</div></section>`;
 }
 const renderGantt = () => { const b = $('#ganttBox'); if (b) b.innerHTML = ganttHTML(); };
 document.addEventListener('input', e => { const el = e.target; if (el.matches && el.matches('input[data-an=win]')) { AN.win = +el.value; renderGantt(); } });
 
-/* 4. Keterlambatan tertinggi */
+/* 4. Keterlambatan tertinggi: per aktivitas (bottleneck) */
 function delayCard(sc, d) {
-  const now = D(today());
-  const L = sc.filter(p => p.status !== 'completed').map(p => { const s = projSched(d.tBy.get(p.id) || [], now); return s && {p, plan: s.plan, act: s.act, lag: s.plan - s.act}; }).filter(x => x && x.lag > 0.5).sort((a, b) => b.lag - a.lag);
-  const sev = l => l >= 20 ? ['sev3', 'Kritis'] : l >= 10 ? ['sev2', 'Tinggi'] : ['sev1', 'Ringan'];
-  return `<section class="an-card"><div class="an-ch"><div><h2><i></i>Keterlambatan tertinggi</h2><span class="hint">Selisih progress rencana (S-Curve ideal hari ini) dan aktual, hanya project aktif yang punya timeline. Diurutkan dari yang paling molor.</span></div><span class="badge">${L.length} project molor</span></div>
-  ${L.length ? `<div class="an-scroll"><table class="an-t"><thead><tr><th>#</th><th>Project</th><th>Owner / PIC</th><th>Rencana</th><th>Aktual</th><th>Selisih</th><th style="text-align:left">Tingkat</th><th>Status</th></tr></thead><tbody>
-  ${L.map((x, i) => { const [c, l] = sev(x.lag); return `<tr><td><span class="an-rank">${i + 1}</span></td><td><a href="#/project/${x.p.id}/study">${esc(x.p.name)}</a><small>${esc(x.p.project_no)}</small></td><td style="text-align:left">${esc(x.p.owner_name || pname(x.p.owner_id))}${x.p.pic_id ? `<small>PIC ${esc(pname(x.p.pic_id))}</small>` : ''}</td><td>${p1(x.plan)}%</td><td>${p1(x.act)}%</td><td><b style="color:#E8651F">-${p1(x.lag)} poin</b></td><td style="text-align:left"><span class="an-lag"><i style="width:${Math.min(100, x.lag * 2)}%"></i></span></td><td><span class="an-sev ${c}">${l}</span></td></tr>`; }).join('')}</tbody></table></div>`
-  : '<p class="empty-s">Tidak ada project aktif yang tertinggal dari rencana.</p>'}</section>`;
+  const now = D(today()), ids = new Set(sc.filter(p => p.status !== 'completed').map(p => p.id)), L = [];
+  d.tasks.forEach(t => {
+    if (!ids.has(t.project_id) || !validT(t) || num(t.progress) >= 100) return;
+    const plan = planFrac(t, now) * 100, act = num(t.progress), lag = plan - act; if (lag <= 0.5) return;
+    L.push({t, p: d.projects.find(x => x.id === t.project_id) || {}, plan, act, lag, over: D(t.end_date) < now ? Math.round((now - D(t.end_date)) / DAY) : 0});
+  });
+  L.sort((a, b) => b.lag - a.lag || b.over - a.over); const top = L.slice(0, 10), sev = l => l >= 40 ? ['sev3', 'Kritis'] : l >= 20 ? ['sev2', 'Tinggi'] : ['sev1', 'Ringan'];
+  return `<section class="an-card"><div class="an-ch"><div><h2><i></i>Keterlambatan tertinggi (bottleneck aktivitas)</h2><span class="hint">Selisih progress rencana (S-Curve hari ini) dan aktual per kegiatan timeline pada project aktif. Menampilkan 10 teratas.</span></div><span class="badge">${L.length} kegiatan molor</span></div>
+  ${top.length ? `<div class="an-scroll"><table class="an-t"><thead><tr><th>#</th><th>Aktivitas</th><th style="text-align:left">Project</th><th>Rencana</th><th>Aktual</th><th>Selisih</th><th style="text-align:left">Tingkat</th><th>Lewat tenggat</th></tr></thead><tbody>
+  ${top.map((x, i) => { const [c, l] = sev(x.lag); return `<tr><td><span class="an-rank">${i + 1}</span></td><td><a href="#/project/${x.t.project_id}/study">${esc(x.t.name)}</a><small>${x.t.pic_id ? 'PIC ' + esc(pname(x.t.pic_id)) + ' · ' : ''}${fmtDate(x.t.start_date)} – ${fmtDate(x.t.end_date)}</small></td><td style="text-align:left">${esc(x.p.name || '-')}<small>${esc(x.p.project_no || '')}</small></td><td>${p1(x.plan)}%</td><td>${p1(x.act)}%</td><td><b style="color:#E8651F">-${p1(x.lag)} poin</b></td><td style="text-align:left"><span class="an-lag"><i style="width:${Math.min(100, x.lag)}%"></i></span> <span class="an-sev ${c}">${l}</span></td><td>${x.over ? x.over + ' hari' : '-'}</td></tr>`; }).join('')}</tbody></table></div>`
+  : '<p class="empty-s">Tidak ada kegiatan yang tertinggal dari rencana.</p>'}</section>`;
 }
 
-/* 5. Procurement overview */
+/* 5. Procurement overview + rata-rata waktu pengadaan */
 function procModel(sc, d) {
-  const sysBy = group(d.systems, 'project_id'), qBy = group(d.qty, 'item_id'), tot = {budget: 0, ordered: 0, arrived: 0, planned: 0, pending: 0, n: {ordered: 0, arrived: 0, planned: 0, pending: 0}}, per = [];
+  const sysBy = group(d.systems, 'project_id'), qBy = group(d.qty, 'item_id'), tot = {budget: 0, ordered: 0, arrived: 0, planned: 0, pending: 0, n: {ordered: 0, arrived: 0, planned: 0, pending: 0}}, per = [], days = [];
   sc.forEach(p => {
     const sel = (sysBy.get(p.id) || []).find(s => s.is_selected), r = {p, budget: 0, arrived: 0, count: 0};
     (d.iBy.get(p.id) || []).forEach(i => {
@@ -3207,22 +3204,23 @@ function procModel(sc, d) {
       const qs = qBy.get(i.id) || [], qty = sel ? num((qs.find(x => x.system_id === sel.id) || {}).qty) : Math.max(0, ...qs.map(x => num(x.qty)));
       if (qty <= 0) return; const v = qty * num(i.unit_price), k = st === 'arrived' ? 'arrived' : (st === 'ordered' || st === 'shipped') ? 'ordered' : st === 'pending' ? 'pending' : 'planned';
       tot[k] += v; tot.n[k]++; tot.budget += v; r.budget += v; r.count++; if (k === 'arrived') r.arrived += v;
+      const from = i.ordered_at || i.ordered_date || i.created_at;
+      if (k === 'arrived' && i.arrived_date && from && dateOK(i.arrived_date)) days.push(Math.max(0, Math.round((D(i.arrived_date) - D(from)) / DAY)));
     });
     if (r.count) per.push(r);
   });
-  return {tot, per};
+  return {tot, per, days};
 }
 function procCard(sc, d) {
-  const {tot: t, per} = procModel(sc, d), pc = v => t.budget ? Math.round(v / t.budget * 100) : 0;
+  const {tot: t, per, days} = procModel(sc, d), pc = v => t.budget ? Math.round(v / t.budget * 100) : 0, avg = days.length ? days.reduce((a, b) => a + b, 0) / days.length : null;
   const segs = [['Arrived', C.mint, 'arrived'], ['Ordered', C.pur, 'ordered'], ['Planned', C.sky, 'planned'], ['Pending', C.or, 'pending']].map(([l, c, k]) => ({l, c, v: t[k], n: t.n[k]}));
-  const tl = (l, k, c) => `<div class="an-tile" style="--tc:${c}" title="${rupiah(t[k])}"><span>${l}</span><b>${rpc(t[k])}</b><small>${t.n[k]} item · ${pc(t[k])}%</small></div>`;
-  return `<section class="an-card"><div class="an-ch"><div><h2><i></i>Procurement overview</h2><span class="hint">Nilai dari sistem terpilih tiap project (bila belum dipilih, jumlah terbesar antar sistem). Item dibatalkan tidak dihitung. Status "Pending" diatur manual di tab Purchasing.</span></div></div>
-  <div class="an-two"><div class="an-tiles"><div class="an-tile" style="--tc:${C.pur}" title="${rupiah(t.budget)}"><span>Total budget</span><b>${rpc(t.budget)}</b><small>${Object.values(t.n).reduce((a, b) => a + b, 0)} item</small></div>${tl('Ordered value', 'ordered', C.pur)}${tl('Arrived value', 'arrived', C.mint)}${tl('Planned', 'planned', C.sky)}${tl('Pending items', 'pending', C.or)}</div>
+  const tl = (l, k, c) => tile(l, rpc(t[k]), `${t.n[k]} item · ${pc(t[k])}%`, c, rupiah(t[k]));
+  return `<section class="an-card"><div class="an-ch"><div><h2><i></i>Procurement overview</h2><span class="hint">Nilai dari sistem terpilih tiap project (bila belum dipilih, jumlah terbesar antar sistem). Item dibatalkan tidak dihitung. Status "Pending" diatur manual di tab Purchasing. Waktu pengadaan dihitung dari tanggal pesan (bila tercatat) atau saat item masuk RAB, sampai tanggal barang sampai.</span></div></div>
+  <div class="an-two"><div class="an-tiles">${tile('Total budget', rpc(t.budget), Object.values(t.n).reduce((a, b) => a + b, 0) + ' item', C.pur, rupiah(t.budget))}${tl('Ordered value', 'ordered', C.pur)}${tl('Arrived value', 'arrived', C.mint)}${tl('Planned', 'planned', C.sky)}${tl('Pending items', 'pending', C.or)}${tile('Rata-rata waktu pengadaan', avg == null ? '-' : p1(avg) + ' hari', avg == null ? 'belum ada barang sampai' : `${days.length} item · tercepat ${Math.min(...days)} · terlama ${Math.max(...days)} hari`, '#B05FC0')}</div>
   <div>${donutHTML(segs, pc(t.arrived) + '%', 'sudah sampai')}${legend(segs, s => `${rpc(s.v)} <span style="color:#667090;font-weight:500">· ${s.n} item</span>`)}</div></div>
   ${per.length ? `<div class="an-scroll" style="margin-top:20px"><table class="an-t"><thead><tr><th>Project</th><th>Budget</th><th>Arrived</th><th style="text-align:left">Realisasi</th></tr></thead><tbody>${per.sort((a, b) => b.budget - a.budget).map(r => `<tr><td><a href="#/project/${r.p.id}/purchasing">${esc(r.p.name)}</a></td><td>${rupiah(r.budget)}</td><td>${rupiah(r.arrived)}</td><td style="text-align:left"><span class="an-lag" style="background:#DDF3EA"><i style="width:${r.budget ? Math.round(r.arrived / r.budget * 100) : 0}%;background:${C.mint}"></i></span> <b>${r.budget ? Math.round(r.arrived / r.budget * 100) : 0}%</b></td></tr>`).join('')}</tbody></table></div>` : '<p class="empty-s" style="margin-top:14px">Belum ada komponen RAB pada filter ini.</p>'}</section>`;
 }
 
-/* halaman */
 function anHTML() {
   const d = AN.data, sc = scope(d);
   return `<div class="an-head"><div><h1>Analytics</h1><p class="sub">Ringkasan performa engineering, jadwal, keterlambatan, dan pengadaan.</p></div>
@@ -3245,7 +3243,6 @@ Object.assign(ACT, {
   anWin: el => { const n = Number(el.dataset.n), r = $('input[data-an=win]'); AN.win = n === 0 ? curIdx() : (AN.win == null ? curIdx() : AN.win) + n; renderGantt(); if (r) r.value = AN.win; }
 });
 
-/* ---------- routing, nav, render ---------- */
 function ensureNav() {
   const nav = $('#nav'); if (!nav || nav.querySelector('[data-p=analytics]')) return;
   const first = nav.querySelector('a'); if (first) first.insertAdjacentHTML('afterend', `<a href="#/analytics" data-p="analytics">${svgI(IC.chart, 'ic')}Analytics</a>`);
