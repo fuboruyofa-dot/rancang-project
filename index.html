@@ -3507,6 +3507,315 @@ const setApproval = async ok => {
 ACT.studyApprove = () => confirm('Setujui tahap Studi? Progress Studi akan menjadi 100%.') && mut(['study'], () => setApproval(true), 'Studi disetujui');
 ACT.studyUnapprove = () => confirm('Batalkan persetujuan Studi?') && mut(['study'], () => setApproval(false), 'Persetujuan dibatalkan');
 })();
-</script>  
+</script>
+
+  <!-- =====================================================================
+ RANCANG ADD-ON • KEPUTUSAN MCDM (AHP + TOPSIS)
+ PASANG: tempel blok <style> dan <script> ini TEPAT SEBELUM </body>,
+         sesudah blok v9 dan blok <style id="ui-solid">.
+ Hanya MENAMBAH: menu "Keputusan MCDM" (#/mcdm). Tidak mengubah kode lain.
+ Data tersimpan di browser (localStorage), belum terhubung Supabase.
+===================================================================== -->
+<style id="mcdm-css">
+.mc-title-in{width:min(520px,100%)}
+.mc-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.mc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px}
+.mc-alt{border:1px solid var(--line);border-radius:18px;padding:14px;background:#fff;box-shadow:var(--sh);display:flex;flex-direction:column;gap:12px}
+.mc-ah{display:flex;gap:8px;align-items:center}
+.mc-ah input{font-weight:700;font-size:15px}
+.mc-gal{display:flex;gap:8px;flex-wrap:wrap}
+.mc-ph{position:relative;width:78px;height:78px;border-radius:12px;overflow:hidden;border:1px solid var(--line2);background:var(--lav)}
+.mc-ph img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
+.mc-ph .x{position:absolute;top:3px;right:3px;width:20px;height:20px;padding:0;display:grid;place-items:center;background:rgba(255,255,255,.94);border:1px solid var(--line2);font-size:14px}
+.mc-add{width:78px;height:78px;border:2px dashed var(--pl);border-radius:12px;display:grid;place-items:center;text-align:center;color:var(--p);font-size:12px;font-weight:650;cursor:pointer;background:var(--soft);line-height:1.3}
+.mc-add:hover{background:var(--lav)}
+.mc-v{display:grid;grid-template-columns:minmax(0,1fr) 108px;gap:8px 10px;align-items:center}
+.mc-vl{font-size:12.5px;color:var(--mute);line-height:1.35}
+.mc-vl b{color:var(--ink)}
+.mc-pair{padding:14px 0;border-bottom:1px solid var(--line)}
+.mc-pair:last-child{border-bottom:0}
+.mc-pg{display:grid;grid-template-columns:1fr minmax(160px,2fr) 1fr;gap:12px;align-items:center}
+.mc-pg .l{text-align:right}
+.mc-pg b{color:var(--p)}
+.mc-pg span{color:var(--mute)}
+.mc-lab{text-align:center;font-size:13px;color:var(--mute);margin-top:4px}
+.mc-concl{background:var(--lav);border-left:5px solid var(--or);border-radius:12px;padding:13px 16px;margin:16px 0}
+.mc-best{display:inline-block;background:var(--or);color:var(--ink);font-weight:700;font-size:11.5px;border-radius:99px;padding:2px 10px;margin-left:8px}
+.mc-rk{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:10px;background:var(--lav);color:var(--p);font-weight:700}
+.mc-win .mc-rk{background:var(--p);color:#fff}
+.mc-win td{font-weight:700}
+.mc-who{display:flex;align-items:center;gap:10px}
+.mc-th{width:46px;height:46px;border-radius:10px;object-fit:cover;border:1px solid var(--line2);background:var(--lav);flex:none;cursor:zoom-in}
+.mc-th.ph{display:grid;place-items:center;color:var(--pl);font-size:11px;cursor:default}
+.mc-zoom{display:grid;gap:12px}
+.mc-zoom img{max-width:100%;border-radius:12px;border:1px solid var(--line2)}
+@media (max-width:640px){.mc-pg{grid-template-columns:1fr 1fr}.mc-pg input{grid-column:1/3;grid-row:2}.mc-pg .l{text-align:left}}
+</style>
+
+<script>
+(function () {
+'use strict';
+const KEY = 'rancang_mcdm_v1', MAXIMG = 4, MAXCRIT = 10;
+const RI = [0, 0, 0, .58, .9, 1.12, 1.24, 1.32, 1.41, 1.45, 1.49];
+const fmt = (x, d = 4) => Number.isFinite(x) ? x.toFixed(d) : '-';
+const code = i => 'K' + (i + 1);
+const sample = () => ({
+  title: 'Pemilihan Mesin Printing Label',
+  crit: [
+    {id: 'c1', name: 'Kecepatan Printing', unit: 'm/mnt', type: 'B'},
+    {id: 'c2', name: 'Resolusi Printing', unit: 'DPI', type: 'B'},
+    {id: 'c3', name: 'Biaya Print', unit: 'Rp/label', type: 'C'},
+    {id: 'c4', name: 'Maintainability', unit: 'hari/tahun', type: 'C'},
+    {id: 'c5', name: 'Reliability', unit: 'frekuensi/hari', type: 'C'}],
+  alts: [
+    {id: 'a1', name: 'Gressler Printer', imgs: [], v: {c1: 130, c2: 200, c3: 68, c4: 7, c5: 2}},
+    {id: 'a2', name: 'TIJ Prime Jet', imgs: [], v: {c1: 80, c2: 300, c3: 38, c4: 7, c5: 2}},
+    {id: 'a3', name: 'CIJ Docod S200', imgs: [], v: {c1: 384, c2: 120, c3: 42, c4: 20, c5: 4}}],
+  pairs: {'c1|c2': 2, 'c1|c3': 4, 'c1|c4': 2, 'c1|c5': 2, 'c2|c3': 1, 'c2|c4': 1, 'c2|c5': 2, 'c3|c4': 0, 'c3|c5': 1, 'c4|c5': 1}
+});
+let M = null, R = null, uidN = 100, warned = false;
+const nid = p => p + (uidN++) + Date.now().toString(36);
+
+/* ---------- penyimpanan lokal ---------- */
+function load() {
+  try {
+    const j = JSON.parse(localStorage.getItem(KEY));
+    if (j && Array.isArray(j.crit) && Array.isArray(j.alts) && j.crit.length >= 2 && j.alts.length >= 2) {
+      j.pairs = j.pairs || {}; j.title = j.title || 'Keputusan MCDM';
+      j.alts.forEach(a => { a.imgs = Array.isArray(a.imgs) ? a.imgs : []; a.v = a.v || {}; });
+      return j;
+    }
+  } catch (e) {}
+  return sample();
+}
+let st;
+function persist() {
+  clearTimeout(st);
+  st = setTimeout(() => {
+    try { localStorage.setItem(KEY, JSON.stringify(M)); }
+    catch (e) { if (!warned) { warned = true; toast('Penyimpanan browser penuh. Kurangi jumlah atau ukuran gambar.', true); } }
+  }, 400);
+}
+
+/* ---------- perhitungan AHP + TOPSIS (murni, tanpa DOM) ---------- */
+function compute(m) {
+  const n = m.crit.length, A = Array.from({length: n}, () => Array(n).fill(1));
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+    const s = m.pairs[m.crit[i].id + '|' + m.crit[j].id] || 0, a = s <= 0 ? 1 - s : 1 / (1 + s);
+    A[i][j] = a; A[j][i] = 1 / a;
+  }
+  const cs = A[0].map((_, j) => A.reduce((t, r) => t + r[j], 0));
+  const w = A.map(r => r.reduce((t, x, j) => t + x / cs[j], 0) / n);
+  const cm = A.map((r, i) => r.reduce((t, x, j) => t + x * w[j], 0) / w[i]);
+  const lmax = cm.reduce((a, b) => a + b, 0) / n, CI = n > 2 ? (lmax - n) / (n - 1) : 0, ri = RI[Math.min(n, 10)], CR = ri ? CI / ri : 0;
+  let worst = null, wd = 0;
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { const d = Math.abs(Math.log(A[i][j] / (w[i] / w[j]))); if (d > wd) { wd = d; worst = [i, j]; } }
+  const X = m.alts.map(a => m.crit.map(c => parseFloat(a.v[c.id]) || 0));
+  const den = m.crit.map((_, j) => Math.sqrt(X.reduce((t, r) => t + r[j] * r[j], 0)) || 1);
+  const V = X.map(r => r.map((x, j) => x / den[j] * w[j]));
+  const best = m.crit.map((c, j) => { const col = V.map(r => r[j]); return c.type == 'B' ? Math.max(...col) : Math.min(...col); });
+  const wor = m.crit.map((c, j) => { const col = V.map(r => r[j]); return c.type == 'B' ? Math.min(...col) : Math.max(...col); });
+  const dp = V.map(r => Math.sqrt(r.reduce((t, x, j) => t + (x - best[j]) ** 2, 0)));
+  const dm = V.map(r => Math.sqrt(r.reduce((t, x, j) => t + (x - wor[j]) ** 2, 0)));
+  const psi = dp.map((d, i) => (d + dm[i]) ? dm[i] / (d + dm[i]) : 0);
+  const order = psi.map((p, i) => i).sort((a, b) => psi[b] - psi[a]);
+  const rank = []; order.forEach((i, r) => rank[i] = r + 1);
+  return {n, A, w, cm, lmax, CI, CR, ri, worst, X, dp, dm, psi, order, rank};
+}
+function lab(s, A, B) {
+  if (s == 0) return 'Sama penting';
+  const k = Math.abs(s), d = k <= 2 ? 'sedikit lebih penting' : k <= 4 ? 'cukup lebih penting' : k <= 6 ? 'sangat lebih penting' : 'mutlak lebih penting';
+  return (s < 0 ? A : B) + ' ' + d + ' (skala ' + (k + 1) + ')';
+}
+
+/* ---------- tampilan ---------- */
+function renderCrit() {
+  const el = $('#mcCrit'); if (!el) return;
+  el.innerHTML = `<table class="tbl"><thead><tr><th>Kode</th><th>Nama kriteria</th><th>Satuan</th><th>Jenis</th><th></th></tr></thead><tbody>` +
+    M.crit.map((c, i) => `<tr><td class="mono">${code(i)}</td>
+    <td><input data-mc="cname" data-i="${i}" value="${esc(c.name)}" aria-label="Nama kriteria"></td>
+    <td><input data-mc="cunit" data-i="${i}" value="${esc(c.unit)}" aria-label="Satuan"></td>
+    <td><select data-mc="ctype" data-i="${i}" aria-label="Jenis"><option value="B"${c.type == 'B' ? ' selected' : ''}>Benefit (makin besar makin baik)</option><option value="C"${c.type == 'C' ? ' selected' : ''}>Cost (makin kecil makin baik)</option></select></td>
+    <td class="r">${M.crit.length > 2 ? `<button class="x" data-mc="delc" data-i="${i}" title="Hapus" aria-label="Hapus kriteria">×</button>` : ''}</td></tr>`).join('') + '</tbody></table>';
+  const b = $('#mcAddC'); if (b) b.disabled = M.crit.length >= MAXCRIT;
+}
+function renderAlts() {
+  const el = $('#mcAlts'); if (!el) return;
+  el.innerHTML = M.alts.map((a, i) => `<div class="mc-alt">
+    <div class="mc-ah"><input data-mc="aname" data-i="${i}" value="${esc(a.name)}" aria-label="Nama alternatif">${M.alts.length > 2 ? `<button class="x" data-mc="dela" data-i="${i}" title="Hapus alternatif" aria-label="Hapus alternatif">×</button>` : ''}</div>
+    <div class="mc-gal">${a.imgs.map((m, k) => `<div class="mc-ph"><img src="${m.src}" alt="${esc(m.name || a.name)}" data-mc="zoom" data-i="${i}"><button type="button" class="x" data-mc="delimg" data-i="${i}" data-k="${k}" aria-label="Hapus gambar">×</button></div>`).join('')}
+      ${a.imgs.length < MAXIMG ? `<label class="mc-add" title="Tambah gambar"><input type="file" accept="image/*" multiple hidden data-mc="img" data-i="${i}">+ Gambar</label>` : ''}</div>
+    <div class="mc-v">${M.crit.map((c, j) => `<span class="mc-vl"><b>${code(j)}</b> ${esc(c.name)}<br>${esc(c.unit)}${c.unit ? ' · ' : ''}${c.type == 'B' ? 'benefit' : 'cost'}</span>
+      <input type="number" step="any" data-mc="aval" data-i="${i}" data-c="${c.id}" value="${esc(a.v[c.id] ?? '')}" aria-label="${esc(c.name)} untuk ${esc(a.name)}">`).join('')}</div></div>`).join('');
+  const b = $('#mcAddA'); if (b) b.disabled = M.alts.length >= 12;
+}
+function renderPairs() {
+  const el = $('#mcPairs'); if (!el) return; let h = '';
+  for (let i = 0; i < M.crit.length; i++) for (let j = i + 1; j < M.crit.length; j++) {
+    const a = M.crit[i], b = M.crit[j], k = a.id + '|' + b.id, s = M.pairs[k] || 0;
+    h += `<div class="mc-pair"><div class="mc-pg"><div class="l"><b>${code(i)}</b> <span>${esc(a.name)}</span></div>
+    <input type="range" min="-8" max="8" step="1" value="${s}" data-mc="pair" data-key="${k}" data-i="${i}" data-j="${j}" aria-label="Perbandingan ${esc(a.name)} dan ${esc(b.name)}">
+    <div><b>${code(j)}</b> <span>${esc(b.name)}</span></div></div><div class="mc-lab" id="mcl-${i}-${j}">${esc(lab(s, a.name, b.name))}</div></div>`;
+  }
+  el.innerHTML = h;
+}
+function renderRes() {
+  const el = $('#mcRes'); if (!el) return; const r = R, ok = r.CR <= 0.1, top = M.alts[r.order[0]];
+  const thumb = a => a.imgs[0] ? `<img class="mc-th" src="${a.imgs[0].src}" alt="${esc(a.name)}" data-mc="zoom" data-i="${M.alts.indexOf(a)}">` : '<span class="mc-th ph">tanpa foto</span>';
+  let h = '<div class="ch"><h3>4. Hasil</h3></div>';
+  h += `<p>Rasio konsistensi AHP (CR): <b class="mono">${fmt(r.CR)}</b> ${ok ? badge('approved', 'Konsisten') : badge('revision', 'Belum konsisten')} <span class="hint">lambda max ${fmt(r.lmax)} · CI ${fmt(r.CI)}</span></p>`;
+  if (!ok && r.worst) h += `<p class="hint">CR di atas 0,1. Tinjau ulang perbandingan <b>${code(r.worst[0])} ${esc(M.crit[r.worst[0]].name)}</b> dengan <b>${code(r.worst[1])} ${esc(M.crit[r.worst[1]].name)}</b>, karena paling menyimpang dari bobot keseluruhan.</p>`;
+  h += '<div class="scroll"><table class="tbl"><thead><tr><th>Kriteria</th><th>Bobot</th><th style="width:40%"></th></tr></thead><tbody>' +
+    M.crit.map((c, i) => `<tr><td>${code(i)} ${esc(c.name)}</td><td class="mono">${fmt(r.w[i])}</td><td>${bar(r.w[i] * 100)}</td></tr>`).join('') + '</tbody></table></div>';
+  h += `<div class="mc-concl">Alternatif terbaik berdasarkan pemeringkatan TOPSIS adalah <b>${esc(top.name)}</b> dengan skor <b class="mono">${fmt(r.psi[r.order[0]])}</b>.</div>`;
+  h += '<div class="scroll"><table class="tbl"><thead><tr><th>Rank</th><th>Alternatif</th><th class="r">Ed+</th><th class="r">Ed-</th><th class="r">Skor (Psi)</th><th style="width:26%"></th></tr></thead><tbody>' +
+    r.order.map((i, k) => `<tr class="${k == 0 ? 'mc-win' : ''}"><td><span class="mc-rk">${k + 1}</span></td><td><div class="mc-who">${thumb(M.alts[i])}<span>${esc(M.alts[i].name)}${k == 0 ? '<span class="mc-best">Terbaik</span>' : ''}</span></div></td>
+    <td class="r mono">${fmt(r.dp[i])}</td><td class="r mono">${fmt(r.dm[i])}</td><td class="r mono">${fmt(r.psi[i])}</td><td>${bar(r.psi[i] * 100)}</td></tr>`).join('') + '</tbody></table></div>';
+  h += `<p class="hint" style="margin-top:12px">Cara membaca: skor (Psi) berkisar 0 sampai 1. Semakin dekat ke 1, alternatif semakin dekat dengan kondisi ideal dan semakin jauh dari kondisi terburuk. CR sebaiknya 0,1 atau kurang agar bobot kriteria dapat dipercaya.</p>
+  <div class="mc-row" style="margin-top:12px"><button class="btn primary" data-mc="xl">Export Excel</button><button class="btn primary" data-mc="pdf">Export PDF</button></div>`;
+  el.innerHTML = h;
+}
+function calc() { R = compute(M); renderRes(); }
+function drawPage() {
+  const main = $('#main'); if (!main) return;
+  main.classList.remove('an-main', 'ov-main');
+  main.innerHTML = `<div id="mcRoot">
+  <div class="head"><div><input class="inl title big mc-title-in" data-mc="title" value="${esc(M.title)}" aria-label="Judul keputusan">
+    <p class="sub">Bandingkan beberapa alternatif secara objektif dengan AHP (bobot kriteria) dan TOPSIS (ranking). Data tersimpan di browser ini.</p></div>
+    <div class="mc-row"><button class="btn sm" data-mc="reset">Reset ke contoh</button></div></div>
+  <section class="card"><div class="ch"><div><h3>1. Kriteria</h3><span class="hint">Benefit: makin besar makin baik. Cost: makin kecil makin baik.</span></div></div><div class="scroll" id="mcCrit"></div>
+    <div style="margin-top:12px"><button class="btn sm" id="mcAddC" data-mc="addc">+ Tambah kriteria</button></div></section>
+  <section class="card"><div class="ch"><div><h3>2. Alternatif, gambar, dan nilainya</h3><span class="hint">Setiap alternatif dapat diberi hingga ${MAXIMG} gambar. Klik gambar untuk memperbesar.</span></div></div><div class="mc-grid" id="mcAlts"></div>
+    <div style="margin-top:14px"><button class="btn sm" id="mcAddA" data-mc="adda">+ Tambah alternatif</button></div></section>
+  <section class="card"><div class="ch"><div><h3>3. Bobot kriteria (perbandingan AHP)</h3><span class="hint">Geser ke sisi kriteria yang menurut Anda lebih penting. Tengah berarti sama penting.</span></div></div><div id="mcPairs"></div></section>
+  <section class="card" id="mcRes"></section></div>`;
+  renderCrit(); renderAlts(); renderPairs(); calc();
+}
+
+/* ---------- gambar ---------- */
+async function addImgs(i, files) {
+  const a = M.alts[i], room = MAXIMG - a.imgs.length;
+  if (room <= 0) { toast('Maksimal ' + MAXIMG + ' gambar per alternatif.', true); return; }
+  const list = [...files].filter(f => f.type && f.type.startsWith('image/')).slice(0, room);
+  if (!list.length) { toast('Pilih file gambar.', true); return; }
+  for (const f of list) {
+    try { const p = await prepImage(f, 900, .78); a.imgs.push({id: nid('i'), name: f.name, src: await blobToDataURL(p)}); }
+    catch (e) { fail(e); }
+  }
+  persist(); renderAlts(); renderRes();
+}
+function zoom(i) {
+  const a = M.alts[i]; if (!a || !a.imgs.length) return;
+  openModal({title: a.name, wide: true, noFooter: true, body: `<div class="mc-zoom">${a.imgs.map(m => `<img src="${m.src}" alt="${esc(a.name)}">`).join('')}</div>`});
+}
+
+/* ---------- ekspor ---------- */
+const slug = s => String(s || 'mcdm').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'mcdm';
+function exportXlsx() {
+  if (!window.XLSX) throw new Error('Pustaka Excel belum termuat. Pastikan terhubung ke internet lalu muat ulang halaman.');
+  const r = R, cn = M.crit.map((c, i) => code(i) + ' ' + c.name), wb = XLSX.utils.book_new();
+  const add = (n, rows) => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), n);
+  add('Input', [[M.title], ['Alternatif', ...cn], ['Satuan', ...M.crit.map(c => c.unit)], ['Jenis', ...M.crit.map(c => c.type == 'B' ? 'Benefit' : 'Cost')], ...M.alts.map((a, i) => [a.name, ...r.X[i]])]);
+  add('AHP', [['Matriks berpasangan', ...cn], ...r.A.map((row, i) => [cn[i], ...row]), [], ['Kriteria', 'Bobot', 'Consistency measure'], ...cn.map((c, i) => [c, r.w[i], r.cm[i]]), [], ['lambda max', r.lmax], ['CI', r.CI], ['CR', r.CR], ['Status', r.CR <= 0.1 ? 'Konsisten' : 'Belum konsisten']]);
+  add('TOPSIS', [['Rank', 'Alternatif', 'Ed+', 'Ed-', 'Psi'], ...r.order.map(i => [r.rank[i], M.alts[i].name, r.dp[i], r.dm[i], r.psi[i]])]);
+  const out = XLSX.write(wb, {bookType: 'xlsx', type: 'array'});
+  saveBlob(slug(M.title) + '.xlsx', new Blob([out], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+}
+const loadScript = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('Pustaka PDF gagal dimuat. Pastikan terhubung ke internet.')); document.head.appendChild(s); });
+async function pdfDoc() {
+  if (!(window.jspdf && window.jspdf.jsPDF)) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  let doc = new window.jspdf.jsPDF();
+  if (typeof doc.autoTable !== 'function') { await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'); doc = new window.jspdf.jsPDF(); }
+  return doc;
+}
+const imgDims = src => new Promise(res => { const i = new Image(); i.onload = () => res({w: i.naturalWidth, h: i.naturalHeight}); i.onerror = () => res(null); i.src = src; });
+async function exportPdf() {
+  const r = R, doc = await pdfDoc(), ok = r.CR <= 0.1;
+  doc.setFontSize(15); doc.text(String(M.title || 'Keputusan MCDM'), 14, 16);
+  doc.setFontSize(10); doc.text('Metode AHP + TOPSIS. CR = ' + fmt(r.CR) + ' (' + (ok ? 'konsisten' : 'belum konsisten') + '), lambda max = ' + fmt(r.lmax) + ', CI = ' + fmt(r.CI), 14, 23);
+  doc.autoTable({startY: 28, head: [['Kriteria', 'Jenis', 'Bobot']], body: M.crit.map((c, i) => [code(i) + ' ' + c.name, c.type == 'B' ? 'Benefit' : 'Cost', fmt(r.w[i])])});
+  doc.autoTable({startY: doc.lastAutoTable.finalY + 8, head: [['Alternatif', ...M.crit.map((c, i) => code(i))]], body: M.alts.map((a, i) => [a.name, ...r.X[i]])});
+  doc.autoTable({startY: doc.lastAutoTable.finalY + 8, head: [['Rank', 'Alternatif', 'Ed+', 'Ed-', 'Psi']], body: r.order.map(i => [r.rank[i], M.alts[i].name, fmt(r.dp[i]), fmt(r.dm[i]), fmt(r.psi[i])])});
+  let y = doc.lastAutoTable.finalY + 10;
+  if (y > 270) { doc.addPage(); y = 16; }
+  doc.setFontSize(11); doc.text('Kesimpulan: alternatif terbaik adalah ' + M.alts[r.order[0]].name + ' (skor ' + fmt(r.psi[r.order[0]]) + ').', 14, y);
+  const withImg = r.order.filter(i => M.alts[i].imgs.length);
+  if (withImg.length) {
+    doc.addPage(); doc.setFontSize(13); doc.text('Gambar alternatif', 14, 16); let gx = 14, gy = 24; doc.setFontSize(9);
+    for (const i of withImg) {
+      const a = M.alts[i]; if (gy > 250) { doc.addPage(); gy = 16; }
+      doc.setFontSize(10); doc.text('#' + r.rank[i] + ' ' + a.name, 14, gy); gy += 4; gx = 14;
+      for (const m of a.imgs) {
+        const fm = /^data:image\/png/.test(m.src) ? 'PNG' : /^data:image\/jpe?g/.test(m.src) ? 'JPEG' : null, d = fm && await imgDims(m.src); if (!d) continue;
+        const k = Math.min(42 / d.w, 32 / d.h), w = d.w * k, h = d.h * k;
+        if (gx + w > 196) { gx = 14; gy += 36; if (gy > 255) { doc.addPage(); gy = 16; } }
+        try { doc.addImage(m.src, fm, gx, gy, w, h); } catch (e) {} gx += 46;
+      }
+      gy += 40;
+    }
+  }
+  saveBlob(slug(M.title) + '.pdf', doc.output('blob'));
+}
+
+/* ---------- event ---------- */
+const inRoot = t => t && t.closest && t.closest('#mcRoot');
+document.addEventListener('input', e => {
+  const t = e.target; if (!inRoot(t)) return; const d = t.dataset; if (!d.mc) return; const i = +d.i;
+  switch (d.mc) {
+    case 'title': M.title = t.value; persist(); return;
+    case 'cname': M.crit[i].name = t.value; renderAlts(); renderPairs(); break;
+    case 'cunit': M.crit[i].unit = t.value; renderAlts(); break;
+    case 'aname': M.alts[i].name = t.value; break;
+    case 'aval': M.alts[i].v[d.c] = t.value; break;
+    case 'pair': { const s = +t.value, j = +d.j; M.pairs[d.key] = s; const l = $('#mcl-' + i + '-' + j); if (l) l.textContent = lab(s, M.crit[i].name, M.crit[j].name); break; }
+    default: return;
+  }
+  persist(); calc();
+});
+document.addEventListener('change', e => {
+  const t = e.target; if (!inRoot(t)) return; const d = t.dataset; if (!d.mc) return; const i = +d.i;
+  if (d.mc === 'ctype') { M.crit[i].type = t.value; renderAlts(); persist(); calc(); }
+  else if (d.mc === 'img') { const f = t.files; addImgs(i, f).then(() => { t.value = ''; }).catch(fail); }
+});
+document.addEventListener('click', e => {
+  const el = e.target.closest && e.target.closest('[data-mc]'); if (!el || !inRoot(el)) return; const d = el.dataset, i = +d.i;
+  try {
+    switch (d.mc) {
+      case 'addc': { if (M.crit.length >= MAXCRIT) return; const id = nid('c'); M.crit.push({id, name: 'Kriteria baru', unit: '', type: 'B'}); M.alts.forEach(a => { a.v[id] = ''; }); renderCrit(); renderAlts(); renderPairs(); persist(); calc(); break; }
+      case 'adda': { const v = {}; M.crit.forEach(c => { v[c.id] = ''; }); M.alts.push({id: nid('a'), name: 'Alternatif baru', imgs: [], v}); renderAlts(); persist(); calc(); break; }
+      case 'delc': if (confirm('Hapus kriteria ini?')) { M.crit.splice(i, 1); renderCrit(); renderAlts(); renderPairs(); persist(); calc(); } break;
+      case 'dela': if (confirm('Hapus alternatif ini beserta gambarnya?')) { M.alts.splice(i, 1); renderAlts(); persist(); calc(); } break;
+      case 'delimg': M.alts[i].imgs.splice(+d.k, 1); renderAlts(); persist(); renderRes(); break;
+      case 'zoom': zoom(i); break;
+      case 'reset': if (confirm('Kembalikan ke data contoh? Seluruh isian dan gambar saat ini akan hilang.')) { M = sample(); persist(); drawPage(); toast('Data contoh dipulihkan'); } break;
+      case 'xl': exportXlsx(); break;
+      case 'pdf': toast('Menyusun PDF…'); exportPdf().catch(fail); break;
+    }
+  } catch (err) { fail(err); }
+});
+
+/* ---------- menu & routing ---------- */
+const NAVICON = '<svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18M7 21h10M5 7h14"/><path d="M5 7l-2.5 6a3.5 3.5 0 0 0 5 0L5 7zM19 7l-2.5 6a3.5 3.5 0 0 0 5 0L19 7z"/></svg>';
+function ensureNavMc() {
+  const nav = $('#nav'); if (!nav || nav.querySelector('[data-p=mcdm]')) return;
+  const a = nav.querySelector('[data-p=overview]') || nav.querySelector('[data-p=analytics]') || nav.querySelector('a');
+  const html = `<a href="#/mcdm" data-p="mcdm">${NAVICON}Keputusan MCDM</a>`;
+  if (a) a.insertAdjacentHTML('afterend', html); else nav.insertAdjacentHTML('beforeend', html);
+}
+const _r = window.render;
+window.render = function () {
+  ensureNavMc();
+  if (!/^#\/mcdm/.test(location.hash)) return _r.apply(this, arguments);
+  S.route = {page: 'mcdm'};
+  if (window.__RN && S.me && window.__RN.N.uid !== S.me.id) { try { window.__RN.notifInit(); } catch (e) {} }
+  $$('#nav a').forEach(a => a.classList.toggle('on', a.dataset.p === 'mcdm'));
+  const c = $('#crumb'); if (c) c.innerHTML = 'RANCANG / <b>Keputusan MCDM</b>';
+  if (!M) M = load();
+  if (!$('#mcRoot')) drawPage();
+};
+window.__MCDM = {compute, sample};
+try { if (typeof S !== 'undefined' && S && S.me && document.querySelector('.side')) { ensureNavMc(); if (/^#\/mcdm/.test(location.hash)) window.render(); } } catch (e) { console.error(e); }
+})();
+</script>
 </body>
 </html>
