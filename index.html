@@ -3449,6 +3449,64 @@ svg path[stroke="#2F7FB0"],svg circle[stroke="#2F7FB0"]{stroke:#17204B}
 
 @media (max-width:1280px){.mods{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:760px){.mods{grid-template-columns:repeat(2,minmax(0,1fr))}.mod{padding:12px}}
+
+/* ---------- perbaikan Gantt ---------- */
+/* 1. batang project kembali terlihat di semua kolom, termasuk minggu ini */
+.an-gb.on{background-color:#604CC3}
+.an-gb.tb{background-color:#B05FC0}
+.an-gb.td{background-color:#3FBF8F}
+
+/* 2. minggu padat: oranye solid pada header dan baris hitungan, bukan garis putus-putus */
+.an-g .hv{border-left:1px solid #EFEAF8!important;border-right:1px solid #EFEAF8!important}
+.an-gw.hv,.an-gc.hv{background:#FF7F3E;color:#17204B;font-weight:700}
+.an-gb.hv:not(.on):not(.tb):not(.td){background-color:#FFF1E8}
+
+/* 3. minggu ini: ungu/orchid, supaya tidak tertukar dengan minggu padat */
+.an-gw.now,.an-gw.hv.now{background:#B05FC0;color:#fff}
+.an-gb.now:not(.on):not(.tb):not(.td){background-color:#F1EDFB}
 </style>
+
+<script>
+(function () {
+'use strict';
+const cnt = k => S.pd.items.filter(i => i.kind === k).length;
+function studyChecks() {
+  const d = S.pd, st = d.study || {};
+  return [
+    ['Ideasi awal (tujuan dan problem statement)', !!(String(st.objective || '').trim() && String(st.problem_statement || '').trim())],
+    ['Persyaratan desain', cnt('design_requirement') > 0],
+    ['Batasan desain', cnt('design_constraint') > 0],
+    ['Fitur alat', cnt('tool_feature') > 0],
+    ['Timeline pengerjaan (S-Curve)', d.tasks.some(t => t.start_date && t.end_date)],
+    ['Parameter trial', d.params.length > 0]
+  ];
+}
+function studyScore() {
+  const c = studyChecks();
+  if (S.pd.study && S.pd.study.approved_at) return 100;
+  return Math.round(c.filter(x => x[1]).length / c.length * 700) / 10;
+}
+function studyCard() {
+  const c = studyChecks(), all = c.every(x => x[1]), st = S.pd.study || {}, ok = !!st.approved_at, v = studyScore();
+  return `<section class="card"><div class="ch"><div><h3>Kelengkapan dan persetujuan Studi</h3>
+    <span class="hint">Terisi lengkap = 70%. Menjadi 100% setelah disetujui Manager. Progress kegiatan di S-Curve tidak memengaruhi angka ini.</span></div>
+    <b class="mono" style="font-size:24px">${pct(v)}%</b></div>${bar(v, 'big')}
+    <ul class="items" style="margin-top:14px">${c.map(([l, f]) => `<li><span>${f ? '✓' : '○'} ${esc(l)}</span>${f ? badge('approved', 'Terisi') : badge('draft', 'Belum')}</li>`).join('')}</ul>
+    ${ok ? `<p class="hint" style="margin:8px 0">Disetujui oleh ${esc(pname(st.approved_by))} pada ${fmtDT(st.approved_at)}.</p>${isMgr() ? '<button class="btn sm" data-act="studyUnapprove">Batalkan persetujuan</button>' : ''}`
+      : isMgr() ? `<button class="btn primary" data-act="studyApprove" ${all ? '' : 'disabled'}>Setujui Studi</button>${all ? '' : '<span class="hint"> Lengkapi semua bagian terlebih dulu.</span>'}`
+      : `<p class="hint">${all ? 'Menunggu persetujuan Manager.' : 'Lengkapi semua bagian, lalu ajukan ke Manager.'}</p>`}
+  </section>`;
+}
+const _ts = window.tabStudy;
+window.tabStudy = function () { return _ts() + studyCard(); };
+
+const setApproval = async ok => {
+  if (LIVE) { const {error} = await sb.rpc('set_study_approval', {p_project: pid(), p_approve: ok}); if (error) throw error; }
+  else await A.update('project_studies', pid(), {approved_at: ok ? new Date().toISOString() : null, approved_by: ok ? S.me.id : null}, 'project_id');
+};
+ACT.studyApprove = () => confirm('Setujui tahap Studi? Progress Studi akan menjadi 100%.') && mut(['study'], () => setApproval(true), 'Studi disetujui');
+ACT.studyUnapprove = () => confirm('Batalkan persetujuan Studi?') && mut(['study'], () => setApproval(false), 'Persetujuan dibatalkan');
+})();
+</script>  
 </body>
 </html>
