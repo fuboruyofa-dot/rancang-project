@@ -3272,5 +3272,164 @@ ACT.anRefresh = () => { toast('Memuat ulang data…'); show(page(), true); };
 if (/^#\/(analytics|overview)/.test(location.hash) && S.me && document.querySelector('.side')) { RN.ensureNav(); ensureNav2(); window.render(); }
 })();
 </script>
+
+  <!-- =====================================================================
+ RANCANG • PALET SOLID (ungu utama + orchid, oranye, mint) di atas dasar putih bersih
+ PASANG: tempel blok <style> ini PALING AKHIR, tepat sebelum </body> (setelah blok v9).
+ Tidak ada yang perlu dihapus. Blok ini menimpa warna v6 (krem/biru) dan v8/v9 (biru langit).
+ Palet:  Ungu #604CC3 (utama) · Orchid #B05FC0 · Oranye #FF7F3E · Mint #3FBF8F
+===================================================================== -->
+<style id="ui-solid">
+:root{
+  --p:#604CC3; --p2:#7461D0; --pd:#4B3AA3; --pl:#B3A7EA;
+  --orc:#B05FC0; --orcd:#8E45A3; --or:#FF7F3E; --ord:#E8651F; --mint:#3FBF8F; --mintd:#2A9C71;
+  --ink:#17204B; --mute:#667090;
+  --bg:#fff; --cream:#fff; --soft:#FAF9FE; --lav:#F1EDFB; --lav2:#E4DDF7; --line:#ECE8F5; --line2:#DDD6EE;
+  --ok:#1F8F68; --okbg:#DDF4EA; --warn:#C2530E; --warnbg:#FFE8DA;
+  /* warna tahap (urutan: Studi, Design, Purchasing, Pengerjaan, Trial) */
+  --c-blue:#EAE6FA; --c-mint:#F6E8F9; --c-peach:#FFE9DC; --c-lav:#DDF4EA; --c-cyan:#E0DAF4; --c-pink:#F6E8F9;
+  --sh:0 1px 3px rgba(96,76,195,.05),0 10px 28px rgba(96,76,195,.07);
+}
+/* ---------- dasar putih bersih ---------- */
+body,.main,.app,.col,.main.an-main{background:#fff}
+.side,.topbar{background:#fff}
+.topbar{border-bottom:1px solid var(--line)}
+.gsearch{background:var(--soft);border-color:var(--line)}
+.card,.phead,.wcard,.stat,.plist,.an-card,.ovp{background:#fff;border-color:var(--line);box-shadow:var(--sh)}
+.stat{background:var(--soft);box-shadow:none}
+.phead{background:#fff}
+.an-card,.ovp{border-color:var(--line)}
+.auth{background:linear-gradient(160deg,#F4F0FD,#fff 60%)}
+.tbl th{background:var(--soft)}
+
+/* ---------- tombol & navigasi: ungu solid ---------- */
+.btn:hover{background:#F4F1FC;border-color:var(--pl)}
+.btn.primary{background:var(--p);border-color:var(--p);color:#fff;box-shadow:0 6px 16px rgba(96,76,195,.28)}
+.btn.primary:hover{background:var(--pd);border-color:var(--pd)}
+.logo{background:var(--p);box-shadow:0 8px 18px rgba(96,76,195,.3)}
+.nav a:hover{background:#F4F1FC;color:var(--ink)}
+.nav a.on{background:var(--p);color:#fff;box-shadow:0 8px 18px rgba(96,76,195,.28)}
+.nav a.on svg{stroke:#fff}
+.tagcard{background:var(--p);color:rgba(255,255,255,.88)}
+.tagcard b{color:#fff}
+.avatar{background:#EAE6FA;color:var(--p)}
+.chip,.badge{background:var(--lav);color:var(--pd)}
+input:focus,select:focus,textarea:focus{border-color:var(--p2);box-shadow:0 0 0 3px rgba(96,76,195,.14)}
+
+/* ---------- progress bar ungu solid ---------- */
+.bar{background:rgba(96,76,195,.12)}
+.bar i{background:var(--p)}
+.seg{background:#EEEAF8}
+.seg i{background:var(--p)}
+/* segmen lima tahap pada daftar project mengikuti warna tahap */
+.segs .seg:nth-child(1) i{background:#604CC3}
+.segs .seg:nth-child(2) i{background:#B05FC0}
+.segs .seg:nth-child(3) i{background:#FF7F3E}
+.segs .seg:nth-child(4) i{background:#3FBF8F}
+.segs .seg:nth-child(5) i{background:#4B3AA3}
+
+/* ---------- hero: ungu solid, tombol oranye ---------- */
+.hero{background:var(--p);color:#fff}
+.hero:before{background:rgba(176,95,192,.45)}
+.hero:after{background:rgba(255,127,62,.30)}
+.hero h1{color:#fff}
+.hero p{color:rgba(255,255,255,.86)}
+.hero .hi{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.32);box-shadow:none}
+.hero .btn.primary{background:var(--or);border-color:var(--or);color:var(--ink);font-weight:700;box-shadow:0 8px 18px rgba(0,0,0,.18)}
+.hero .btn.primary:hover{background:var(--ord);border-color:var(--ord);color:#fff}
+.hero .ill [fill="#D3EBF8"]{fill:#E6F7F0}
+.hero .ill [stroke="#4FA9DB"]{stroke:#3FBF8F}
+.hero .ill [fill="#DCD5F4"]{fill:#F6E8F9}
+.hero .ill [fill="#8A79DB"]{fill:#B05FC0}
+.hero .ill [fill="#B3A7EA"]{fill:#FF7F3E}
+.hero .ill [fill="#604CC3"]{fill:#FF7F3E}
+.hero .ill [stroke="#604CC3"]{stroke:#FF7F3E}
+.nbell{border-color:transparent}
+.nb-badge{background:var(--or);border-color:#fff}
+
+/* ---------- kartu modul: solid per tahap ---------- */
+.mod{color:#fff}
+.mod p,.mod .mp span{color:inherit;opacity:.88}
+.mod .wm{stroke:rgba(255,255,255,.28)!important;opacity:1}
+.mod .bar{background:rgba(255,255,255,.28)}
+.mod .bar i{background:#fff}
+.mod .mi{background:#fff}
+.m-study{background:#604CC3}.m-study .mi .ic{stroke:#604CC3}
+.m-design{background:#B05FC0}.m-design .mi .ic{stroke:#B05FC0}
+.m-buy{background:#FF7F3E;color:var(--ink)}.m-buy .mi .ic{stroke:#E8651F}
+.m-exec{background:#3FBF8F;color:var(--ink)}.m-exec .mi .ic{stroke:#2A9C71}
+.m-trial{background:#4B3AA3}.m-trial .mi .ic{stroke:#4B3AA3}
+.m-prop{background:#8E45A3}.m-prop .mi .ic{stroke:#8E45A3}
+.m-buy .bar,.m-exec .bar{background:rgba(23,32,75,.16)}
+.m-buy .bar i,.m-exec .bar i{background:var(--ink)}
+.m-buy .wm,.m-exec .wm{stroke:rgba(255,255,255,.4)!important}
+
+/* ---------- daftar project ---------- */
+.prow:hover{background:#F7F4FD}
+.pd.late,.pd.late b,.late{color:var(--ord)}
+.dl .dd{background:var(--okbg);color:var(--ok)}
+.dl .dd.soon{background:var(--warnbg);color:var(--warn)}
+.dl .dd.late{background:var(--or);color:#fff}
+.chipbad{background:var(--warnbg);color:var(--warn)}
+.chipbad.ok{background:var(--okbg);color:var(--ok)}
+.act .dot2{background:var(--lav)}
+.act .dot2.ok{background:var(--okbg)}
+.act .dot2.warn{background:var(--warnbg)}
+
+/* ---------- donut status ---------- */
+.donut circle[stroke="#80C4E9"]{stroke:#B05FC0}
+.donut circle[stroke="#8A79DB"]{stroke:#604CC3}
+.donut circle[stroke="#FFB27F"]{stroke:#FF7F3E}
+.donut circle[stroke="#7FD1AE"]{stroke:#3FBF8F}
+.donut circle[stroke="#F7A1B0"]{stroke:#CFCADF}
+.donut circle[stroke="#F0F1F8"]{stroke:#F1EEF9}
+.lgd div:nth-child(1) i{background:#B05FC0!important}
+.lgd div:nth-child(2) i{background:#604CC3!important}
+.lgd div:nth-child(3) i{background:#FF7F3E!important}
+.lgd div:nth-child(4) i{background:#3FBF8F!important}
+.lgd div:nth-child(5) i{background:#CFCADF!important}
+
+/* ---------- badge status ---------- */
+.b-planning{background:#F6E8F9;color:#8E45A3}
+.b-on_progress,.b-in_progress,.b-submitted,.b-in_review,.b-ordered,.b-shipped,.b-doing{background:#EAE6FA;color:#4B3AA3}
+.b-on_hold,.b-revision,.b-revision_needed,.b-review{background:var(--warnbg);color:var(--warn)}
+.b-completed,.b-done,.b-approved,.b-pass,.b-arrived,.b-generated{background:var(--okbg);color:var(--ok)}
+.b-high{background:var(--warnbg);color:var(--warn)}
+.b-medium{background:#EAE6FA;color:#4B3AA3}
+
+/* ---------- halaman project: warna tetap per tahap ---------- */
+.rg stop:nth-child(1){stop-color:#604CC3}
+.rg stop:nth-child(2){stop-color:#B05FC0}
+.stg .st .bar{background:rgba(255,255,255,.7)}
+.stg .st0 .bar i,.tab:nth-of-type(1) .bar i{background:#604CC3}
+.stg .st1 .bar i,.tab:nth-of-type(2) .bar i{background:#B05FC0}
+.stg .st2 .bar i,.tab:nth-of-type(3) .bar i{background:#FF7F3E}
+.stg .st3 .bar i,.tab:nth-of-type(4) .bar i{background:#3FBF8F}
+.stg .st4 .bar i,.tab:nth-of-type(5) .bar i{background:#4B3AA3}
+.tab .bar{background:rgba(255,255,255,.7)}
+.tab.on{border-color:var(--p);box-shadow:0 0 0 1px var(--p) inset,0 8px 18px rgba(96,76,195,.16)}
+.tab.on .t{color:var(--p)}
+
+/* ---------- analytics (v8/v9): ganti biru langit dengan orchid ---------- */
+.an-gb.tb{background-color:#B05FC0}
+.an-gw.now{background:#B05FC0;color:#fff}
+.an-gm{background:#EAE6FA;color:#4B3AA3}
+.an-gm:nth-child(odd){background:#F6E8F9;color:#8E45A3}
+.an-gb.now{background-color:#FFF1E8}
+.an-legend i[style*="80C4E9"]{background:#B05FC0!important}
+.an-legend i[style*="FFF6E9"]{background:#FFF1E8!important;border-color:#FFD9BF!important}
+.an-donut circle[stroke="#80C4E9"]{stroke:#B05FC0}
+.an-lg i[style*="80C4E9"]{background:#B05FC0!important}
+.an-tile[style*="80C4E9"]{--tc:#B05FC0!important}
+.an-chips i[style*="80C4E9"]{background:#B05FC0!important}
+svg rect[fill="#80C4E9"]{fill:#B05FC0}
+svg path[stroke="#2F7FB0"],svg circle[stroke="#2F7FB0"]{stroke:#17204B}
+.an-sev.sev1{background:var(--okbg);color:var(--ok)}
+.an-sev.sev2{background:var(--warnbg);color:var(--warn)}
+.an-sev.sev3{background:var(--or);color:var(--ink)}
+.an-insight{background:var(--okbg);color:var(--ok)}
+.np-tabs button.on{background:var(--p)}
+.ov .an-donut{background:transparent}
+</style>
 </body>
 </html>
