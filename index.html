@@ -3430,6 +3430,25 @@ svg path[stroke="#2F7FB0"],svg circle[stroke="#2F7FB0"]{stroke:#17204B}
 .an-insight{background:var(--okbg);color:var(--ok)}
 .np-tabs button.on{background:var(--p)}
 .ov .an-donut{background:transparent}
+
+/* ---------- rapikan: hapus kartu sidebar, modul jadi 1 baris ---------- */
+.tagcard{display:none}
+
+.mods{grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:18px}
+.mod{min-height:0;padding:14px;border-radius:16px;gap:2px}
+.mod .wm{display:none}                 /* ikon besar transparan di pojok */
+.mod p{display:none}                   /* subjudul: "Ideasi, kajian, timeline" dst. */
+.mod .mi{width:32px;height:32px;border-radius:10px;margin-bottom:8px}
+.mod .mi .ic{width:17px;height:17px}
+.mod h3{font-size:13.5px;line-height:1.25}
+.mod .mp{flex-wrap:wrap;gap:0 6px;margin:4px 0 6px}
+.mod .mp b{font-size:20px}
+.mod .mp span{font-size:11px}
+.mod .bar.big,.mod .bar{height:5px}
+.mod .go{font-size:12px;padding-top:6px}
+
+@media (max-width:1280px){.mods{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:760px){.mods{grid-template-columns:repeat(2,minmax(0,1fr))}.mod{padding:12px}}
 </style>
 </body>
 </html>
